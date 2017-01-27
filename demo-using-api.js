@@ -16,33 +16,33 @@ var redditAPI = reddit(connection);
 
 
 //==========CODE EXECUTION=======================
-// It's request time!
-redditAPI.createUser({
-  username: 'applesFOlyfe',
-  password: 'derp'
-})
-.then(function(user){
-    console.log(user); //testing to see if user created
+// //===FEATURE - Create User and Create Post=======
+// redditAPI.createUser({
+//   username: 'applesFOlyfe',
+//   password: 'derp'
+// })
+// .then(function(user){
+//     console.log(user); //testing to see if user created
   
-    return redditAPI.createPost({
-        title: 'Waddup world',
-        url: 'https://www.reddit.com/',
-        userId: user.id
-      });
-})
-.then(function(post){
-  console.log(post);
-  connection.end();
-})
-.catch(function(error){
-    console.log("Error happened", error);
+//     return redditAPI.createPost({
+//         title: 'Waddup world',
+//         url: 'https://www.reddit.com/',
+//         userId: user.id
+//       });
+// })
+// .then(function(post){
+//   console.log(post);
+//   connection.end();
+// })
+// .catch(function(error){
+//     console.log("Error happened", error);
   
-  connection.end();
+//   connection.end();
 
-});
+// });
 
 
-// //creating posts with existing users
+// //===creating posts with existing users===
 // redditAPI.createPost({
 //   title: 'Tuxedo on Tour! 2017 dates released!',
 //   url: 'http://www.mayerhawthorne.com/tuxedo-on-tour/',
@@ -60,7 +60,7 @@ redditAPI.createUser({
 // });
 
 
-// //displaying all posts
+// //===FEATURE - Displaying all posts=======
 // redditAPI.getAllPosts()
 // .then(function(bigPostsTable){
 //   console.log(bigPostsTable);
@@ -72,3 +72,17 @@ redditAPI.createUser({
 //   connection.end();
 
 // });
+
+//===FEATURE - getAllPostsForUser========================
+redditAPI.getAllPostsForUser(2)
+.then(function(result){
+  console.log("Posts for user \"" + result[0].username + "\":");
+  console.log(result);
+  connection.end();
+})
+.catch(function(error){
+    console.log("Error happened", error);
+  
+  connection.end();
+
+});
