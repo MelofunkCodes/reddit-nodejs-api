@@ -61,18 +61,18 @@ var redditAPI = reddit(connection);
 // });
 
 
-//===FEATURE - Displaying all posts=======
-redditAPI.getAllPosts()
-.then(function(bigPostsTable){
-  console.log(bigPostsTable);
-  connection.end();
-})
-.catch(function(error){
-    console.log("Error happened", error);
+// //===FEATURE - Displaying all posts=======
+// redditAPI.getAllPosts()
+// .then(function(bigPostsTable){
+//   console.log(bigPostsTable);
+//   connection.end();
+// })
+// .catch(function(error){
+//     console.log("Error happened", error);
   
-  connection.end();
+//   connection.end();
 
-});
+// });
 
 // //===FEATURE - getAllPostsForUser========================
 // redditAPI.getAllPostsForUser(2)
@@ -88,19 +88,19 @@ redditAPI.getAllPosts()
 
 // });
 
-// //===FEATURE - getSinglePost========================
-// redditAPI.getSinglePost(6)
-// .then(function(result){
-//   console.log("Post for user \"" + result.username + "\":");
-//   console.log(result);
-//   connection.end();
-// })
-// .catch(function(error){
-//     console.log("Error happened", error);
+//===FEATURE - getSinglePost========================
+redditAPI.getSinglePost(6)
+.then(function(result){
+  console.log("Post for user \"" + result.username + "\":");
+  console.log(result);
+  connection.end();
+})
+.catch(function(error){
+    console.log("Error happened", error);
   
-//   connection.end();
+  connection.end();
 
-// });
+});
 
 
 // //===============SUBREDDIT PART=======================

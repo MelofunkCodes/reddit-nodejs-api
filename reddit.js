@@ -11,6 +11,7 @@ QUESTIONS:
 
 testing
 4. Why is my user id skipping when I've tested the throwing error on duplicate case, and then creating a new successful user? i.e. I jumped from id 4 to 6.
+4A: ID's are skipping because of their auto_increment feature. When something is created (id, post, etc), id automatically increments, but then if something causes it to fail, that id is corrupted and doesn't show in your tables. 
 
 */
 
@@ -68,21 +69,27 @@ module.exports = function RedditAPI(conn) {
         //console.log("offset: ", offset);
 
         return conn.query(`
-                  SELECT 
-                      posts.id AS postId,
-                      posts.title,
-                      posts.url,
-                      posts.userId,
-                      posts.createdAt AS postCreatedAt,
-                      posts.updatedAt AS postUpdatedAt,
-                      users.id,
-                      users.username,
-                      users.createdAt,
-                      users.updatedAt
-                  FROM posts
-                      JOIN users ON posts.userId = users.id
-                      ORDER BY postCreatedAt DESC
-                      LIMIT ? OFFSET ?`, [limit, offset])
+            SELECT 
+              posts.id AS postId,
+              posts.title,
+              posts.url,
+              posts.userId,
+              posts.createdAt AS postCreatedAt,
+              posts.updatedAt AS postUpdatedAt,
+              users.id,
+              users.username,
+              users.createdAt,
+              users.updatedAt,
+              subreddits.id AS subredditId,
+              subreddits.name AS subredditName,
+              subreddits.description,
+              subreddits.createdAt AS subCreatedAt,
+              subreddits.updatedAt AS subUpdatedAt
+            FROM users
+              JOIN posts ON users.id = posts.userId
+              JOIN subreddits ON posts.subredditId = subreddits.id
+              ORDER BY postCreatedAt DESC
+              LIMIT ? OFFSET ?`, [limit, offset])
           .then(function(bigPostsTable) {
             /*
             LOGIC
@@ -109,6 +116,13 @@ module.exports = function RedditAPI(conn) {
                   username: eachPost.username,
                   createdAt: eachPost.createdAt,
                   updatedAt: eachPost.updatedAt
+                },
+                subreddit: {
+                  id: eachPost.subredditId,
+                  name: eachPost.subredditName,
+                  description: eachPost.description,
+                  createdAt: eachPost.subCreatedAt,
+                  updatedAt: eachPost.subUpdatedAt
                 }
               }
 
@@ -136,9 +150,15 @@ module.exports = function RedditAPI(conn) {
               posts.userId,
               users.username,
               posts.createdAt AS postCreatedAt,
-              posts.updatedAt AS postUpdatedAt
+              posts.updatedAt AS postUpdatedAt,
+              subreddits.id AS subredditId,
+              subreddits.name AS subredditName,
+              subreddits.description,
+              subreddits.createdAt AS subCreatedAt,
+              subreddits.updatedAt AS subUpdatedAt
             FROM users
               JOIN posts ON users.id = posts.userId
+              JOIN subreddits ON posts.subredditId = subreddits.id
               WHERE users.id = ?
               LIMIT ? OFFSET ?`, [userId, limit, offset])
           .then(function(userPosts) {
@@ -152,7 +172,14 @@ module.exports = function RedditAPI(conn) {
                 createdAt: eachPost.postCreatedAt,
                 updatedAt: eachPost.postUpdatedAt,
                 userId: eachPost.userId,
-                username: eachPost.username
+                username: eachPost.username,
+                subreddit: {
+                  id: eachPost.subredditId,
+                  name: eachPost.subredditName,
+                  description: eachPost.description || '',
+                  createdAt: eachPost.subCreatedAt,
+                  updatedAt: eachPost.subUpdatedAt
+                }
               }
 
               posts.push(post);
@@ -170,9 +197,15 @@ module.exports = function RedditAPI(conn) {
               posts.userId,
               users.username,
               posts.createdAt,
-              posts.updatedAt
+              posts.updatedAt,
+              subreddits.id AS subredditId,
+              subreddits.name AS subredditName,
+              subreddits.description,
+              subreddits.createdAt AS subCreatedAt,
+              subreddits.updatedAt AS subUpdatedAt
             FROM users
               JOIN posts ON users.id = posts.userId
+              JOIN subreddits ON posts.subredditId = subreddits.id
               WHERE posts.id = ?`, [postId])
           .then(function(result) {
             return {
@@ -182,10 +215,18 @@ module.exports = function RedditAPI(conn) {
               createdAt: result[0].createdAt,
               updatedAt: result[0].updatedAt,
               userId: result[0].userId,
-              username: result[0].username
+              username: result[0].username,
+              subreddit: {
+                id: result[0].subredditId,
+                name: result[0].subredditName,
+                description: result[0].description || '',
+                createdAt: result[0].subCreatedAt,
+                updatedAt: result[0].subUpdatedAt
+              }
             };
           });
       }, //closing bracket for getSinglePost 
+      //====================SUBREDDIT PART===============================
       createSubreddit: function(sub) {
           return conn.query(
               'INSERT INTO subreddits (name, description, createdAt) VALUES (?, ?, ?)', [sub.name, sub.description, new Date()])
