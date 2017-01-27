@@ -196,7 +196,29 @@ module.exports = function RedditAPI(conn) {
             .then(function(subTable) {
               return subTable[0];
             });
-        } //closing bracket for createSubreddit
+        }, //closing bracket for createSubreddit
+        getAllSubreddits: function(){
+          return conn.query(
+            `SELECT * FROM subreddits ORDER BY createdAt DESC`)
+            .then(function(result){
+              var subs = [];
+              
+              result.forEach(function(eachSub){
+                var sub = {
+                  id: eachSub.id,
+                  name: eachSub.name,
+                  description: eachSub.description || '',
+                  createdAt: eachSub.createdAt,
+                  updatedAt: eachSub.updatedAt
+                };
+                
+                subs.push(sub);
+              });
+              
+              return subs;
+            });
+          
+        } //closing bracket for getAllSubreddits
 
     } //closing bracket for BIG return at line 14
   } //closing bracket for line 13

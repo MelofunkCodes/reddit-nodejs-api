@@ -102,12 +102,23 @@ var redditAPI = reddit(connection);
 // });
 
 
-//===============SUBREDDIT PART=======================
-//===FEATURE - getSinglePost==========================
-redditAPI.createSubreddit({
-  name: 'chitchat',
-  description: null
-})
+// //===============SUBREDDIT PART=======================
+// //===FEATURE - getSinglePost==========================
+// redditAPI.createSubreddit({
+//   name: 'chitchat',
+//   description: null
+// })
+// .then(function(result){
+//   console.log(result);
+//   connection.end();
+// })
+// .catch(function(error){
+//   console.log("Error happened", error);
+//   connection.end();
+// });
+
+//===FEATURE - getAllSubreddits=======================
+redditAPI.getAllSubreddits()
 .then(function(result){
   console.log(result);
   connection.end();
