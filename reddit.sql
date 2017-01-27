@@ -25,7 +25,8 @@ CREATE TABLE `posts` (
 );
 
 
---Subreddit functionality, step 1
+--SUBREDDIT FUNCTIONALITY 
+--step 1 - create subreddits table
 CREATE TABLE subreddits (
     id INT(11) NOT NULL AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
@@ -35,3 +36,8 @@ CREATE TABLE subreddits (
     PRIMARY KEY (id),
     UNIQUE KEY (name)
 );
+
+--step 2 - add subredditId column to posts table
+ALTER TABLE posts
+    ADD subredditId INT,
+    ADD CONSTRAINT FOREIGN KEY(subredditId) REFERENCES subreddits(id);
