@@ -73,10 +73,24 @@ var redditAPI = reddit(connection);
 
 // });
 
-//===FEATURE - getAllPostsForUser========================
-redditAPI.getAllPostsForUser(2)
+// //===FEATURE - getAllPostsForUser========================
+// redditAPI.getAllPostsForUser(2)
+// .then(function(result){
+//   console.log("Posts for user \"" + result[0].username + "\":");
+//   console.log(result);
+//   connection.end();
+// })
+// .catch(function(error){
+//     console.log("Error happened", error);
+  
+//   connection.end();
+
+// });
+
+//===FEATURE - getSinglePost========================
+redditAPI.getSinglePost(6)
 .then(function(result){
-  console.log("Posts for user \"" + result[0].username + "\":");
+  console.log("Post for user \"" + result.username + "\":");
   console.log(result);
   connection.end();
 })

@@ -160,7 +160,32 @@ module.exports = function RedditAPI(conn) {
               
               return posts;
             });
-        } //closing bracket for getAllPostsForUser
+      }, //closing bracket for getAllPostsForUser
+      getSinglePost: function(postId){
+        return conn.query(`
+            SELECT 
+              posts.id,
+              posts.title,
+              posts.url,
+              posts.userId,
+              users.username,
+              posts.createdAt,
+              posts.updatedAt
+            FROM users
+              JOIN posts ON users.id = posts.userId
+              WHERE posts.id = ?`, [postId])
+            .then(function(result){
+                return {
+                  id: result[0].id,
+                  title: result[0].title,
+                  url: result[0].url,
+                  createdAt: result[0].createdAt,
+                  updatedAt: result[0].updatedAt,
+                  userId: result[0].userId,
+                  username: result[0].username
+                };
+            });
+      }//closing bracket for getSinglePost 
 
 
     } //closing bracket for BIG return at line 14
