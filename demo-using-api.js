@@ -44,9 +44,10 @@ var redditAPI = reddit(connection);
 
 // //===creating posts with existing users===
 // redditAPI.createPost({
-//   title: 'Tuxedo on Tour! 2017 dates released!',
-//   url: 'http://www.mayerhawthorne.com/tuxedo-on-tour/',
-//   userId: 3
+//   title: 'Saturday sale downtown MTL',
+//   url: 'http://www.google.ca',
+//   userId: 9,
+//   subredditId: 6 //if I input a subredditId that does not exist, error will show
 // })
 // .then(function(post){
 //   console.log(post);
@@ -60,18 +61,18 @@ var redditAPI = reddit(connection);
 // });
 
 
-// //===FEATURE - Displaying all posts=======
-// redditAPI.getAllPosts()
-// .then(function(bigPostsTable){
-//   console.log(bigPostsTable);
-//   connection.end();
-// })
-// .catch(function(error){
-//     console.log("Error happened", error);
+//===FEATURE - Displaying all posts=======
+redditAPI.getAllPosts()
+.then(function(bigPostsTable){
+  console.log(bigPostsTable);
+  connection.end();
+})
+.catch(function(error){
+    console.log("Error happened", error);
   
-//   connection.end();
+  connection.end();
 
-// });
+});
 
 // //===FEATURE - getAllPostsForUser========================
 // redditAPI.getAllPostsForUser(2)
@@ -117,13 +118,13 @@ var redditAPI = reddit(connection);
 //   connection.end();
 // });
 
-//===FEATURE - getAllSubreddits=======================
-redditAPI.getAllSubreddits()
-.then(function(result){
-  console.log(result);
-  connection.end();
-})
-.catch(function(error){
-  console.log("Error happened", error);
-  connection.end();
-});
+// //===FEATURE - getAllSubreddits=======================
+// redditAPI.getAllSubreddits()
+// .then(function(result){
+//   console.log(result);
+//   connection.end();
+// })
+// .catch(function(error){
+//   console.log("Error happened", error);
+//   connection.end();
+// });

@@ -44,10 +44,10 @@ module.exports = function RedditAPI(conn) {
       },
       createPost: function(post) {
         return conn.query(
-            'INSERT INTO posts (userId, title, url, createdAt) VALUES (?, ?, ?, ?)', [post.userId, post.title, post.url, new Date()])
+            'INSERT INTO posts (userId, subredditId, title, url, createdAt) VALUES (?, ?, ?, ?, ?)', [post.userId, post.subredditId, post.title, post.url, new Date()])
           .then(function(newPost) {
             return conn.query(
-              'SELECT id,title,url,userId, createdAt, updatedAt FROM posts WHERE id = ?', [newPost.insertId]);
+              'SELECT id,title,url,userId, subredditId, createdAt, updatedAt FROM posts WHERE id = ?', [newPost.insertId]);
           })
           .then(function(postTable) {
             return postTable[0];
@@ -217,7 +217,6 @@ module.exports = function RedditAPI(conn) {
               
               return subs;
             });
-          
         } //closing bracket for getAllSubreddits
 
     } //closing bracket for BIG return at line 14
