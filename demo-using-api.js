@@ -87,16 +87,32 @@ var redditAPI = reddit(connection);
 
 // });
 
-//===FEATURE - getSinglePost========================
-redditAPI.getSinglePost(6)
+// //===FEATURE - getSinglePost========================
+// redditAPI.getSinglePost(6)
+// .then(function(result){
+//   console.log("Post for user \"" + result.username + "\":");
+//   console.log(result);
+//   connection.end();
+// })
+// .catch(function(error){
+//     console.log("Error happened", error);
+  
+//   connection.end();
+
+// });
+
+
+//===============SUBREDDIT PART=======================
+//===FEATURE - getSinglePost==========================
+redditAPI.createSubreddit({
+  name: 'chitchat',
+  description: null
+})
 .then(function(result){
-  console.log("Post for user \"" + result.username + "\":");
   console.log(result);
   connection.end();
 })
 .catch(function(error){
-    console.log("Error happened", error);
-  
+  console.log("Error happened", error);
   connection.end();
-
 });

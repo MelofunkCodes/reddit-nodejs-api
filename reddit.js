@@ -121,14 +121,14 @@ module.exports = function RedditAPI(conn) {
 
       }, //closing bracket for getAllPosts
       getAllPostsForUser: function(userId, options) {
-          if (!options) {
-            options = {};
-          }
+        if (!options) {
+          options = {};
+        }
 
-          var limit = options.numPerPage || 25;
-          var offset = (options.page || 0) * limit;
+        var limit = options.numPerPage || 25;
+        var offset = (options.page || 0) * limit;
 
-          return conn.query(`
+        return conn.query(`
             SELECT 
               posts.id AS postId,
               posts.title,
@@ -141,27 +141,27 @@ module.exports = function RedditAPI(conn) {
               JOIN posts ON users.id = posts.userId
               WHERE users.id = ?
               LIMIT ? OFFSET ?`, [userId, limit, offset])
-            .then(function(userPosts) {
-              var posts = [];
+          .then(function(userPosts) {
+            var posts = [];
 
-              userPosts.forEach(function(eachPost) {
-                var post = {
-                  id: eachPost.postId,
-                  title: eachPost.title,
-                  url: eachPost.url,
-                  createdAt: eachPost.postCreatedAt,
-                  updatedAt: eachPost.postUpdatedAt,
-                  userId: eachPost.userId,
-                  username: eachPost.username
-                }
-                
-                posts.push(post);
-              });
-              
-              return posts;
+            userPosts.forEach(function(eachPost) {
+              var post = {
+                id: eachPost.postId,
+                title: eachPost.title,
+                url: eachPost.url,
+                createdAt: eachPost.postCreatedAt,
+                updatedAt: eachPost.postUpdatedAt,
+                userId: eachPost.userId,
+                username: eachPost.username
+              }
+
+              posts.push(post);
             });
+
+            return posts;
+          });
       }, //closing bracket for getAllPostsForUser
-      getSinglePost: function(postId){
+      getSinglePost: function(postId) {
         return conn.query(`
             SELECT 
               posts.id,
@@ -174,19 +174,29 @@ module.exports = function RedditAPI(conn) {
             FROM users
               JOIN posts ON users.id = posts.userId
               WHERE posts.id = ?`, [postId])
-            .then(function(result){
-                return {
-                  id: result[0].id,
-                  title: result[0].title,
-                  url: result[0].url,
-                  createdAt: result[0].createdAt,
-                  updatedAt: result[0].updatedAt,
-                  userId: result[0].userId,
-                  username: result[0].username
-                };
+          .then(function(result) {
+            return {
+              id: result[0].id,
+              title: result[0].title,
+              url: result[0].url,
+              createdAt: result[0].createdAt,
+              updatedAt: result[0].updatedAt,
+              userId: result[0].userId,
+              username: result[0].username
+            };
+          });
+      }, //closing bracket for getSinglePost 
+      createSubreddit: function(sub) {
+          return conn.query(
+              'INSERT INTO subreddits (name, description, createdAt) VALUES (?, ?, ?)', [sub.name, sub.description, new Date()])
+            .then(function(newSub) {
+              return conn.query(
+                'SELECT * FROM subreddits WHERE id = ?', [newSub.insertId]);
+            })
+            .then(function(subTable) {
+              return subTable[0];
             });
-      }//closing bracket for getSinglePost 
-
+        } //closing bracket for createSubreddit
 
     } //closing bracket for BIG return at line 14
   } //closing bracket for line 13
