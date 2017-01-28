@@ -88,19 +88,19 @@ var redditAPI = reddit(connection);
 
 // });
 
-//===FEATURE - getSinglePost========================
-redditAPI.getSinglePost(6)
-.then(function(result){
-  console.log("Post for user \"" + result.username + "\":");
-  console.log(result);
-  connection.end();
-})
-.catch(function(error){
-    console.log("Error happened", error);
+// //===FEATURE - getSinglePost========================
+// redditAPI.getSinglePost(6)
+// .then(function(result){
+//   console.log("Post for user \"" + result.username + "\":");
+//   console.log(result);
+//   connection.end();
+// })
+// .catch(function(error){
+//     console.log("Error happened", error);
   
-  connection.end();
+//   connection.end();
 
-});
+// });
 
 
 // //===============SUBREDDIT PART=======================
@@ -128,3 +128,18 @@ redditAPI.getSinglePost(6)
 //   console.log("Error happened", error);
 //   connection.end();
 // });
+
+//===FEATURE - createOrUpdateVote=========================
+redditAPI.createOrUpdateVote({
+  postId: 4,
+  userId: 3,
+  vote: 1
+})
+.then(function(result){
+  console.log(result);
+  connection.end();
+})
+.catch(function(error){
+  console.log("Error happened", error);
+  connection.end();
+});

@@ -258,7 +258,30 @@ module.exports = function RedditAPI(conn) {
               
               return subs;
             });
-        } //closing bracket for getAllSubreddits
+        }, //closing bracket for getAllSubreddits
+        //================VOTING FUNCTIONALITY==========================
+        createOrUpdateVote: function(vote){
+         // var voteOptions = [1, 0, -1];
+          
+          if (vote.vote !== 1 && vote.vote !== -1){ //if user didn't vote 1, 0, or -1
+            //console.log("hello weird vote");
+            vote.vote = 0;
+          }
+          
+          //console.log("vote object: ", vote);
+          return conn.query(
+          `INSERT INTO votes SET postId=?, userId=?, vote=?, createdAt=? ON DUPLICATE KEY UPDATE vote=?, updatedAt=?`, [vote.postId, vote.userId, vote.vote, new Date(), vote.vote, new Date()])
+          .then(function(newVote){
+            return conn.query('SELECT * FROM votes');
+          })
+          .then(function(result){
+            console.log("typeof createdAt: ", typeof result.createdAt);
+            return result;
+          });
+          
+          
+
+        }//closing bracket for createVote
 
     } //closing bracket for BIG return at line 14
   } //closing bracket for line 13

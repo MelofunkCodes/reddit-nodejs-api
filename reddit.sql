@@ -41,3 +41,16 @@ CREATE TABLE subreddits (
 ALTER TABLE posts
     ADD subredditId INT,
     ADD CONSTRAINT FOREIGN KEY(subredditId) REFERENCES subreddits(id);
+    
+--VOTES FUNCTIONALITY
+--step 1
+CREATE TABLE votes (
+  userId INT(11),
+  postId INT(11),
+  vote TINYINT,
+  createdAt DATETIME NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  PRIMARY KEY(userId, postId),
+  FOREIGN KEY(userId) REFERENCES users(id),
+  FOREIGN KEY (postId) REFERENCES posts(id)
+);
