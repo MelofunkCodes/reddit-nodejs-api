@@ -14,16 +14,24 @@ app.get('/', function (req, res) {
 // });
 
 
-//Exercise 2
-//if client requests '/hello?name=John'
-app.get('/hello', function (req, res){
-    console.log('your request is', req.query);
+// //Exercise 2
+// //if client requests '/hello?name=John'
+// app.get('/hello', function (req, res){
+//     console.log('your request is', req.query);
     
-    var firstName = req.query.name;
+//     var firstName = req.query.name;
     
-    res.send('<h1>Hello '+ firstName + '!</h1>');
+//     res.send('<h1>Hello '+ firstName + '!</h1>');
     
-})
+// })
+
+//Exercise 2B
+app.get('/hello/:name', function (req, res){
+    console.log('your request is', req.params);
+    
+    res.send('<h1>Hello '+ req.params.name + '!</h1>');
+    
+})// URL will look like this... '/hello/John'
 
 
 
