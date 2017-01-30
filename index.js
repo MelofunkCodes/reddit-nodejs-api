@@ -104,52 +104,52 @@ app.get('/posts', function(req, res) {
         })
         .then(function(bigPostsTable) {
             console.log(bigPostsTable);
-            
-            var beginningHTML = 
-            `<div id="posts">
+
+            var beginningHTML =
+                `<div id="posts">
                 <h1>List of Posts</h1>
                     <ul class="posts-list">`;
-                                        
+
             var posts = [];
-            
-            bigPostsTable.forEach(function(eachPost){
-                
-                var middleHTML = 
-                `<li class="post-item">
+
+            bigPostsTable.forEach(function(eachPost) {
+
+                var middleHTML =
+                    `<li class="post-item">
                     <h2 class="content-item__title">
-                        <a href="`+ eachPost.url +`">`+eachPost.title+`</a>
+                        <a href="` + eachPost.url + `">` + eachPost.title + `</a>
                     </h2>
-                    <p>Created by `+ eachPost.user.username +`</p>
+                    <p>Created by ` + eachPost.user.username + `</p>
                 </li>`;
-                
+
                 posts.push(middleHTML);
             });
-            
+
             console.log("your posts (before JOIN) are: ", posts);
             var x = posts.join("");
             console.log("your posts are: ", posts);
-            
-            var endHTML =`</ul>
+
+            var endHTML = `</ul>
                         </div>`;
 
-            
+
             res.send(beginningHTML + x + endHTML);
-            
+
             connection.end();
         })
         .catch(function(error) {
             console.log("Error happened", error);
             connection.end();
         });
-        
 
-}); 
+
+});
 
 //=========================================================
 //Exercise 5
-app.get('/createContent', function (req, res) {
-  res.send(
-  `<form action="/createContent" method="POST"> <!-- what is this method="POST" thing? you should know, or ask me :) -->
+app.get('/createContent', function(req, res) {
+    res.send(
+        `<form action="/createContent" method="POST"> <!-- what is this method="POST" thing? you should know, or ask me :) -->
     <div>
         <input type="text" name="url" placeholder="Enter a URL to content">
     </div>
@@ -160,6 +160,87 @@ app.get('/createContent', function (req, res) {
     </form>
   `);
 });
+
+//=========================================================
+//Exercise 6
+
+var bodyParser = require('body-parser')
+app.use(bodyParser.json()); // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({
+    extended: true
+})); // to support URL-encoded bodies
+
+app.get('/posts/:ID', function(req, res) {
+    var postID = req.params.ID;
+    console.log("req.params is...", postID, typeof postID);
+
+    redditAPI.getSinglePost(+postID)
+        .then(function(result) {
+            var beginningHTML =
+                `<div id="posts">
+                <h1>List of Posts</h1>
+                    <ul class="posts-list">`;
+
+
+                var middleHTML =
+                    `<li class="post-item">
+                    <h2 class="content-item__title">
+                        <a href="` + result.url + `">` + result.title + `</a>
+                    </h2>
+                    <p>Created by ` + result.username + `</p>
+                    </li>`;
+
+            var endHTML = `</ul>
+                        </div>`;
+
+
+            res.send(beginningHTML + middleHTML + endHTML);
+            connection.end();
+        })
+        .catch(function(error) {
+            console.log("Error happened", error);
+
+            connection.end();
+
+        });
+
+
+})
+
+app.post('/createContent', function(req, res) {
+
+    //console.log("req.body is...", req.body);
+
+    redditAPI.createPost({
+            title: req.body.title,
+            url: req.body.url,
+            userId: 2,
+            subredditId: 6
+        })
+        .then(function(post) {
+            res.send(post); // this will display actual post object that was created on the website (option 2)
+            
+        //     //-----Can't seem to get options 3 and 4 working (using res.redirect)---------
+        //   // var redirectURL = '/posts/' + post.id;
+        //     res.redirect('/posts'); //option 3
+        //     //if i put into line 223 "redirectURL", that should be option 4
+
+            connection.end();
+
+        })
+        .catch(function(error) {
+            console.log("Error happened", error);
+            res.status(500).send('500 Error');
+            connection.end();
+
+        });
+});
+
+
+
+
+
+
 
 //=========================================================
 /* YOU DON'T HAVE TO CHANGE ANYTHING BELOW THIS LINE :) */
