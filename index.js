@@ -36,47 +36,47 @@ app.get('/', function(req, res) {
 
 // }); // URL will look like this... '/hello/John'
 
-// //=========================================================
-// //Exercise 3
+//=========================================================
+//Exercise 3
 
-// function operation(operator, n1, n2) {
-//     switch (operator) {
-//         case 'add':
-//             return n1 + n2;
-//         case 'subtract':
-//             return n1 - n2;
-//         case 'multiply':
-//             return n1 * n2;
-//         case 'div':
-//             return n1 / n2;
-//         default:
-//             return "error";
-//     }
-// }
+function operation(operator, n1, n2) {
+    switch (operator) {
+        case 'add':
+            return n1 + n2;
+        case 'subtract':
+            return n1 - n2;
+        case 'multiply':
+            return n1 * n2;
+        case 'div':
+            return n1 / n2;
+        default:
+            return "error";
+    }
+}
 
-// app.get('/calculator/:operator', function(req, res) {
-//     // console.log('your request is ', req.params);
-//     // console.log('your query is: ', req.query, typeof req.query.n1);
+app.get('/calculator/:operator', function(req, res) {
+    // console.log('your request is ', req.params);
+    // console.log('your query is: ', req.query, typeof req.query.n1);
 
-//     var result = operation(req.params.operator, +req.query.n1, +req.query.n2);
+    var result = operation(req.params.operator, +req.query.n1, +req.query.n2);
 
-//     // console.log('result is: ', result);
+    // console.log('result is: ', result);
 
-//     if (result === 'error') {
-//         res.status(404).send('404 Error');
-//     }
-//     else {
-//         var obj = {
-//             operator: req.params.operator,
-//             firstOperand: req.query.n1,
-//             secondOperand: req.query.n2,
-//             solution: result
-//         }
+    if (result === 'error') {
+        res.status(404).send('404 Error');
+    }
+    else {
+        var obj = {
+            operator: req.params.operator,
+            firstOperand: req.query.n1,
+            secondOperand: req.query.n2,
+            solution: result
+        }
 
-//         res.send(obj);
-//     }
+        res.send(obj);
+    }
 
-// }); //get object output when typing '.../calculator/div?n1=10&n2=20'
+}); //get object output when typing '.../calculator/div?n1=10&n2=20'
 
 //=========================================================
 //Exercise 4
@@ -144,6 +144,22 @@ app.get('/posts', function(req, res) {
         
 
 }); 
+
+//=========================================================
+//Exercise 5
+app.get('/createContent', function (req, res) {
+  res.send(
+  `<form action="/createContent" method="POST"> <!-- what is this method="POST" thing? you should know, or ask me :) -->
+    <div>
+        <input type="text" name="url" placeholder="Enter a URL to content">
+    </div>
+    <div>
+        <input type="text" name="title" placeholder="Enter the title of your content">
+    </div>
+    <button type="submit">Create!</button>
+    </form>
+  `);
+});
 
 //=========================================================
 /* YOU DON'T HAVE TO CHANGE ANYTHING BELOW THIS LINE :) */
