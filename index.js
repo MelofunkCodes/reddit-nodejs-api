@@ -80,20 +80,20 @@ app.get('/calculator/:operator', function(req, res) {
 
 // //=========================================================
 // //Exercise 4
-// var mysql = require('promise-mysql');
+var mysql = require('promise-mysql');
 
-// // create a connection to our Cloud9 server
-// var connection = mysql.createPool({
-//     host: 'localhost',
-//     user: 'myeoh27',
-//     password: '',
-//     database: 'reddit',
-//     connectionLimit: 10
-// });
+// create a connection to our Cloud9 server
+var connection = mysql.createPool({
+    host: 'localhost',
+    user: 'myeoh27',
+    password: '',
+    database: 'reddit',
+    connectionLimit: 10
+});
 
-// // load our API and pass it the connection
-// var reddit = require('./reddit');
-// var redditAPI = reddit(connection);
+// load our API and pass it the connection
+var reddit = require('./reddit');
+var redditAPI = reddit(connection);
 
 
 // app.get('/posts', function(req, res) {
@@ -193,7 +193,7 @@ app.get('/posts/:ID', function(req, res) {
 
 
             res.send(beginningHTML + middleHTML + endHTML);
-            connection.end();
+            //connection.end();
         })
         .catch(function(error) {
             console.log("Error happened", error);
@@ -210,18 +210,18 @@ app.post('/createContent', function(req, res) {
     redditAPI.createPost({
             title: req.body.title,
             url: req.body.url,
-            userId: 2,
+            userId: 4,
             subredditId: 6
         })
         .then(function(post) {
-            res.send(post); // this will display actual post object that was created on the website (option 2)
+            console.log("post: ", post, typeof post);
+            //res.send(post); // this will display actual post object that was created on the website (option 2)
             
-        //     //-----Can't seem to get options 3 and 4 working (using res.redirect)---------
-        //   // var redirectURL = '/posts/' + post.id;
-        //     res.redirect('/posts'); //option 3
-        //     //if i put into line 223 "redirectURL", that should be option 4
+            
+           var redirectURL = '/posts/' + post.id;
+            res.redirect(redirectURL); //option 4
 
-            connection.end();
+            //connection.end();
 
         })
         .catch(function(error) {
@@ -241,23 +241,7 @@ app.get('/createContent', function(req, res) {
    res.render('create-content');
 });
 
-//re-writing exercise 4 to be Pug-friendly
-var mysql = require('promise-mysql');
-
-// create a connection to our Cloud9 server
-var connection = mysql.createPool({
-    host: 'localhost',
-    user: 'myeoh27',
-    password: '',
-    database: 'reddit',
-    connectionLimit: 10
-});
-
-// load our API and pass it the connection
-var reddit = require('./reddit');
-var redditAPI = reddit(connection);
-
-
+// //re-writing exercise 4 to be Pug-friendly
 app.get('/posts', function(req, res) {
 
     req = redditAPI.getAllPosts({
@@ -267,7 +251,7 @@ app.get('/posts', function(req, res) {
         .then(function(bigPostsTable) {
             //console.log(bigPostsTable);
             res.render('post-list', {posts: bigPostsTable});
-            connection.end();
+            //connection.end(); //ending the connection causes the pool to close
         })
         .catch(function(error) {
             console.log("Error happened", error);
