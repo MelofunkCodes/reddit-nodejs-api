@@ -170,36 +170,37 @@ app.use(bodyParser.urlencoded({
 
 app.get('/posts/:ID', function(req, res) {
     var postID = req.params.ID;
-    console.log("req.params is...", postID, typeof postID);
+    //console.log("req.params is...", postID, typeof postID);
 
     redditAPI.getSinglePost(+postID)
         .then(function(result) {
-            var beginningHTML =
-                `<div id="posts">
-                <h1>List of Posts</h1>
-                    <ul class="posts-list">`;
+            // var beginningHTML =
+            //     `<div id="posts">
+            //     <h1>List of Posts</h1>
+            //         <ul class="posts-list">`;
 
 
-                var middleHTML =
-                    `<li class="post-item">
-                    <h2 class="content-item__title">
-                        <a href="` + result.url + `">` + result.title + `</a>
-                    </h2>
-                    <p>Created by ` + result.username + `</p>
-                    </li>`;
+            //     var middleHTML =
+            //         `<li class="post-item">
+            //         <h2 class="content-item__title">
+            //             <a href="` + result.url + `">` + result.title + `</a>
+            //         </h2>
+            //         <p>Created by ` + result.username + `</p>
+            //         </li>`;
 
-            var endHTML = `</ul>
-                        </div>`;
+            // var endHTML = `</ul>
+            //             </div>`;
 
 
-            res.send(beginningHTML + middleHTML + endHTML);
-            //connection.end();
+            // res.send(beginningHTML + middleHTML + endHTML);
+          
+            res.render('single-post', {post: result});
         })
         .catch(function(error) {
             console.log("Error happened", error);
 
         });
-}) //this works! but I can't get it to be redirected here from line 223
+}) 
 
 app.post('/createContent', function(req, res) {
 
@@ -246,7 +247,8 @@ app.get('/posts', function(req, res) {
         })
         .then(function(bigPostsTable) {
             //console.log(bigPostsTable);
-            res.render('post-list', {posts: bigPostsTable});
+            res.render('post-list', {posts: bigPostsTable}); //can also reference 'layout' as first argument and get same result. It may depend on what you're sending as 2nd argument that you want to display on hTML. i.e. if it's a css sheet, sending it to post-list.pug will be useless
+                //better practice to reference the specific pug files vs layout
             //connection.end(); //ending the connection causes the pool to close
         })
         .catch(function(error) {
@@ -255,7 +257,6 @@ app.get('/posts', function(req, res) {
 
 
 });
-
 
 
 //=========================================================
