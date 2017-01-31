@@ -198,8 +198,6 @@ app.get('/posts/:ID', function(req, res) {
         .catch(function(error) {
             console.log("Error happened", error);
 
-            connection.end();
-
         });
 }) //this works! but I can't get it to be redirected here from line 223
 
@@ -210,13 +208,12 @@ app.post('/createContent', function(req, res) {
     redditAPI.createPost({
             title: req.body.title,
             url: req.body.url,
-            userId: 4,
+            userId: 7,
             subredditId: 6
         })
         .then(function(post) {
             console.log("post: ", post, typeof post);
             //res.send(post); // this will display actual post object that was created on the website (option 2)
-            
             
            var redirectURL = '/posts/' + post.id;
             res.redirect(redirectURL); //option 4
@@ -227,7 +224,6 @@ app.post('/createContent', function(req, res) {
         .catch(function(error) {
             console.log("Error happened", error);
             res.status(500).send('500 Error');
-            connection.end();
 
         });
 });
@@ -255,7 +251,6 @@ app.get('/posts', function(req, res) {
         })
         .catch(function(error) {
             console.log("Error happened", error);
-            connection.end();
         });
 
 
