@@ -78,88 +78,86 @@ app.get('/calculator/:operator', function(req, res) {
 
 }); //get object output when typing '.../calculator/div?n1=10&n2=20'
 
-//=========================================================
-//Exercise 4
-var mysql = require('promise-mysql');
+// //=========================================================
+// //Exercise 4
+// var mysql = require('promise-mysql');
 
-// create a connection to our Cloud9 server
-var connection = mysql.createPool({
-    host: 'localhost',
-    user: 'myeoh27',
-    password: '',
-    database: 'reddit',
-    connectionLimit: 10
-});
+// // create a connection to our Cloud9 server
+// var connection = mysql.createPool({
+//     host: 'localhost',
+//     user: 'myeoh27',
+//     password: '',
+//     database: 'reddit',
+//     connectionLimit: 10
+// });
 
-// load our API and pass it the connection
-var reddit = require('./reddit');
-var redditAPI = reddit(connection);
-
-
-app.get('/posts', function(req, res) {
-
-    req = redditAPI.getAllPosts({
-            numPerPage: 5,
-            page: 0
-        })
-        .then(function(bigPostsTable) {
-            console.log(bigPostsTable);
-
-            var beginningHTML =
-                `<div id="posts">
-                <h1>List of Posts</h1>
-                    <ul class="posts-list">`;
-
-            var posts = [];
-
-            bigPostsTable.forEach(function(eachPost) {
-
-                var middleHTML =
-                    `<li class="post-item">
-                    <h2 class="content-item__title">
-                        <a href="` + eachPost.url + `">` + eachPost.title + `</a>
-                    </h2>
-                    <p>Created by ` + eachPost.user.username + `</p>
-                </li>`;
-
-                posts.push(middleHTML);
-            });
-
-            console.log("your posts (before JOIN) are: ", posts);
-            var x = posts.join("");
-            console.log("your posts are: ", posts);
-
-            var endHTML = `</ul>
-                        </div>`;
+// // load our API and pass it the connection
+// var reddit = require('./reddit');
+// var redditAPI = reddit(connection);
 
 
-            res.send(beginningHTML + x + endHTML);
+// app.get('/posts', function(req, res) {
 
-            connection.end();
-        })
-        .catch(function(error) {
-            console.log("Error happened", error);
-            connection.end();
-        });
+//     req = redditAPI.getAllPosts({
+//             numPerPage: 5,
+//             page: 0
+//         })
+//         .then(function(bigPostsTable) {
+//             console.log(bigPostsTable);
+
+//             var beginningHTML =
+//                 `<div id="posts">
+//                 <h1>List of Posts</h1>
+//                     <ul class="posts-list">`;
+
+//             var posts = [];
+
+//             bigPostsTable.forEach(function(eachPost) {
+
+//                 var middleHTML =
+//                     `<li class="post-item">
+//                     <h2 class="content-item__title">
+//                         <a href="` + eachPost.url + `">` + eachPost.title + `</a>
+//                     </h2>
+//                     <p>Created by ` + eachPost.user.username + `</p>
+//                 </li>`;
+
+//                 posts.push(middleHTML);
+//             });
+
+//             console.log("your posts (before JOIN) are: ", posts);
+//             var x = posts.join("");
+//             console.log("your posts are: ", posts);
+
+//             var endHTML = `</ul>
+//                         </div>`;
 
 
-});
+//             res.send(beginningHTML + x + endHTML);
 
-//=========================================================
-//Exercise 5
-app.get('/createContent', function(req, res) {
-    res.send(
-        `<form action="/createContent" method="POST"> <!-- what is this method="POST" thing? you should know, or ask me :) -->
-    <div>
-        <input type="text" name="url" placeholder="Enter a URL to content">
-    </div>
-    <div>
-        <input type="text" name="title" placeholder="Enter the title of your content">
-    </div>
-    <button type="submit">Create!</button>
-    </form>
-  `);
-});
+//             connection.end();
+//         })
+//         .catch(function(error) {
+//             console.log("Error happened", error);
+//             connection.end();
+//         });
+// });
+
+// //=========================================================
+// //Exercise 5
+// app.get('/createContent', function(req, res) {
+//     res.send(
+//         `<form action="/createContent" method="POST"> <!-- what is this method="POST" thing? you should know, or ask me :) -->
+//     <div>
+//         <input type="text" name="url" placeholder="Enter a URL to content">
+//     </div>
+//     <div>
+//         <input type="text" name="title" placeholder="Enter the title of your content">
+//     </div>
+//     <button type="submit">Create!</button>
+//     </form>
+//   `);
+// });
 
 //=========================================================
 //Exercise 6
@@ -203,9 +201,7 @@ app.get('/posts/:ID', function(req, res) {
             connection.end();
 
         });
-
-
-})
+}) //this works! but I can't get it to be redirected here from line 223
 
 app.post('/createContent', function(req, res) {
 
@@ -236,9 +232,50 @@ app.post('/createContent', function(req, res) {
         });
 });
 
+//=========================================================
+//Exercise 7
+app.set('view engine', 'pug');
+
+//re-writing exercise 5 to be Pug-friendly
+app.get('/createContent', function(req, res) {
+   res.render('create-content');
+});
+
+//re-writing exercise 4 to be Pug-friendly
+var mysql = require('promise-mysql');
+
+// create a connection to our Cloud9 server
+var connection = mysql.createPool({
+    host: 'localhost',
+    user: 'myeoh27',
+    password: '',
+    database: 'reddit',
+    connectionLimit: 10
+});
+
+// load our API and pass it the connection
+var reddit = require('./reddit');
+var redditAPI = reddit(connection);
 
 
+app.get('/posts', function(req, res) {
 
+    req = redditAPI.getAllPosts({
+            numPerPage: 5,
+            page: 0
+        })
+        .then(function(bigPostsTable) {
+            //console.log(bigPostsTable);
+            res.render('post-list', {posts: bigPostsTable});
+            connection.end();
+        })
+        .catch(function(error) {
+            console.log("Error happened", error);
+            connection.end();
+        });
+
+
+});
 
 
 
