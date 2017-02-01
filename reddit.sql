@@ -54,3 +54,21 @@ CREATE TABLE votes (
   FOREIGN KEY(userId) REFERENCES users(id),
   FOREIGN KEY (postId) REFERENCES posts(id)
 );
+
+
+-----COOKIE FUNCTIONALITY--------------------
+CREATE TABLE sessions (
+  userId INT(11),
+  token VARCHAR(200),
+  FOREIGN KEY(userId) REFERENCES users(id) --this makes it difficult to TRUNCATE TABLE, remove foreign key?. Removed foreign key.
+);
+
+SELECT 
+  users.id,
+  users.username,
+  sessions.token
+FROM users
+  JOIN sessions ON users.id = sessions.userId
+  WHERE sessions.token = "xxx"\G
+
+  

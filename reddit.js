@@ -1,3 +1,4 @@
+var secureRandom = require('secure-random'); //used to generate session token for cookie
 var bcrypt = require('bcrypt');
 const saltRounds = 10;
 
@@ -17,6 +18,7 @@ testing
 
 module.exports = function RedditAPI(conn) {
     return {
+//==================CREATING FEATURES=========================
       createUser: function(user) {
 
         // first we have to hash the password...
@@ -54,6 +56,69 @@ module.exports = function RedditAPI(conn) {
             return postTable[0];
           });
       },
+//=================LOGIN======================================
+      checkLogin: function(user, pass) {
+        var confirmedUser = "";
+        
+        return conn.query(
+          'SELECT * FROM users WHERE username = ?', [user])
+          .then (function(result) {
+              // check for errors, then...
+              //console.log("result aftery query: ", result);
+              
+              if (result.length === 0) {
+                throw new Error('username or password incorrect'); // in this case the user does not exists
+              }
+              else {
+                confirmedUser = result[0];
+                var actualHashedPassword = confirmedUser.password;
+                
+                return bcrypt.compare(pass, actualHashedPassword);
+              }
+          })
+          .then(function(result){
+              if (result === true) { // let's be extra safe here
+                //console.log("user: ", confirmedUser);
+                return confirmedUser;
+              }
+              else{
+                throw new Error('username or password incorrect');
+              }
+          });
+      }, //closing bracket for checkLogin
+      createSessionToken: function(){ //does not return a promise!
+        return secureRandom.randomArray(100).map(code => code.toString(36)).join(''); 
+        //returns a 181 character "word"
+        //toString(36) --stringifies each character in secureRandom.randomArray to a base-36 integer (url: https://en.wikipedia.org/wiki/Base36)
+      }, //closing bracket for createSessionToken
+      createSession: function(userId){
+        var token = this.createSessionToken();
+        
+        return conn.query('INSERT INTO sessions SET userId = ?, token = ?', [userId, token])
+            .then(function(result){ return token; });
+          // .then( (result) => conn.query('SELECT * FROM sessions WHERE userId = ?', [userId]) ) //ES6 format - arrow notation
+          // //anonymous function takes result argument, but it's never used, and that's ok
+          // .then(function(newSession){
+          //   return newSession[0]; 
+          // })
+         // .catch(console.log); //ES6 way? Because catch takes an anonymous fxn with 1 argument that is for the error, it will pass that value to console.log IF an error occurs
+          //this is preference, you can catch all your errors inside each "API" and then NOT have to catch in the fxn call, or you can call it out in the fxn call
+        
+        
+      },//closing bracket for createSession
+      getUserFromSession: function(cookie){
+        //takes a token as argument, checkes in session table if token belongs to a user, if yes, then it returns user object table for that user only
+        
+        return conn.query(
+          `SELECT 
+            users.id,
+            users.username,
+            sessions.token
+          FROM users
+            JOIN sessions ON users.id = sessions.userId
+            WHERE sessions.token = ? `, [cookie]);
+      }, //closing bracket for getUserFromSession
+//=================DISPLAYING FEATURES========================
       getAllPosts: function(options) {
 
         //console.log("options: ", options);
@@ -67,9 +132,9 @@ module.exports = function RedditAPI(conn) {
 
         //console.log("limit: ", limit);
         //console.log("offset: ", offset);
-        
-        var query = 
-        `SELECT 
+
+        var query =
+          `SELECT 
             posts.id AS postId,
             posts.title,
             posts.url,
@@ -237,73 +302,73 @@ module.exports = function RedditAPI(conn) {
             };
           });
       }, //closing bracket for getSinglePost 
-      //====================SUBREDDIT PART===============================
+//====================SUBREDDIT PART==========================
       createSubreddit: function(sub) {
-          return conn.query(
-              'INSERT INTO subreddits (name, description, createdAt) VALUES (?, ?, ?)', [sub.name, sub.description, new Date()])
-            .then(function(newSub) {
-              return conn.query(
-                'SELECT * FROM subreddits WHERE id = ?', [newSub.insertId]);
-            })
-            .then(function(subTable) {
-              return subTable[0];
-            });
-        }, //closing bracket for createSubreddit
-        getAllSubreddits: function(){
-          return conn.query(
+        return conn.query(
+            'INSERT INTO subreddits (name, description, createdAt) VALUES (?, ?, ?)', [sub.name, sub.description, new Date()])
+          .then(function(newSub) {
+            return conn.query(
+              'SELECT * FROM subreddits WHERE id = ?', [newSub.insertId]);
+          })
+          .then(function(subTable) {
+            return subTable[0];
+          });
+      }, //closing bracket for createSubreddit
+      getAllSubreddits: function() {
+        return conn.query(
             `SELECT * FROM subreddits ORDER BY createdAt DESC`)
-            .then(function(result){
-              var subs = [];
-              
-              result.forEach(function(eachSub){
-                var sub = {
-                  id: eachSub.id,
-                  name: eachSub.name,
-                  description: eachSub.description || '',
-                  createdAt: eachSub.createdAt,
-                  updatedAt: eachSub.updatedAt
-                };
-                
-                subs.push(sub);
-              });
-              
-              return subs;
+          .then(function(result) {
+            var subs = [];
+
+            result.forEach(function(eachSub) {
+              var sub = {
+                id: eachSub.id,
+                name: eachSub.name,
+                description: eachSub.description || '',
+                createdAt: eachSub.createdAt,
+                updatedAt: eachSub.updatedAt
+              };
+
+              subs.push(sub);
             });
-        }, //closing bracket for getAllSubreddits
-        //================VOTING FUNCTIONALITY==========================
-        createOrUpdateVote: function(vote){
-         // var voteOptions = [1, 0, -1];
-          
-          if (vote.vote !== 1 && vote.vote !== -1){ //if user didn't vote 1, 0, or -1
+
+            return subs;
+          });
+      }, //closing bracket for getAllSubreddits
+//================VOTING FUNCTIONALITY==========================
+      createOrUpdateVote: function(vote) {
+          // var voteOptions = [1, 0, -1];
+
+          if (vote.vote !== 1 && vote.vote !== -1) { //if user didn't vote 1, 0, or -1
             //console.log("hello weird vote");
             vote.vote = 0;
           }
-          
+
           //console.log("vote object: ", vote);
           return conn.query(
-          `INSERT INTO votes SET postId=?, userId=?, vote=?, createdAt=? ON DUPLICATE KEY UPDATE vote=?, updatedAt=?`, [vote.postId, vote.userId, vote.vote, new Date(), vote.vote, new Date()])
-          .then(function(newVote){
-            return conn.query('SELECT * FROM votes');
-          })
-          .then(function(result){
-            var votes = [];
-            
-            result.forEach(function(eachVote){
-              eachVote = {
-                postId: eachVote.postId,
-                userId: eachVote.userId,
-                vote: eachVote.vote,
-                createdAt: eachVote.createdAt,
-                updatedAt: eachVote.updatedAt
-              }
-              votes.push(eachVote);
+              `INSERT INTO votes SET postId=?, userId=?, vote=?, createdAt=? ON DUPLICATE KEY UPDATE vote=?, updatedAt=?`, [vote.postId, vote.userId, vote.vote, new Date(), vote.vote, new Date()])
+            .then(function(newVote) {
+              return conn.query('SELECT * FROM votes');
             })
-            return votes;
-          });
-          
-          
+            .then(function(result) {
+              var votes = [];
 
-        }//closing bracket for createVote
+              result.forEach(function(eachVote) {
+                eachVote = {
+                  postId: eachVote.postId,
+                  userId: eachVote.userId,
+                  vote: eachVote.vote,
+                  createdAt: eachVote.createdAt,
+                  updatedAt: eachVote.updatedAt
+                }
+                votes.push(eachVote);
+              })
+              return votes;
+            });
+
+
+
+        } //closing bracket for createVote
 
     } //closing bracket for BIG return at line 14
   } //closing bracket for line 13

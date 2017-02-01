@@ -6,7 +6,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
-var morgan = require('morgan');
+var morgan = require('morgan'); //morgan logs out 
 var mysql = require('promise-mysql');
 
 var app = express();
@@ -23,13 +23,37 @@ app.use(bodyParser.urlencoded({
     extended: false
 })); //??? why is this false when last workshop it was true? This uses querystring library vs qs. Does it matter??
 
-// This middleware will parse the Cookie header from all requests, and put the result in req.cookies.  Read the docs for more info!
-//REFERENCE: https://github.com/expressjs/cookie-parser
-app.use(cookieParser());
-
 // This middleware will console.log every request to your web server! Read the docs for more info!
 //REFERENCE: https://www.npmjs.com/package/morgan
 app.use(morgan('dev'));
+
+// This middleware will parse the Cookie header from all requests, and put the result in req.cookies.  Read the docs for more info!
+//this adds a 'cookies' property to the request, an object of key:value pairs for all the cookies we set
+//REFERENCE: https://github.com/expressjs/cookie-parser
+app.use(cookieParser());
+
+function checkLoginToken(request, response, next){
+    //checks if there is a SESSION cookie...
+    if(request.cookies.SESSION){
+        return redditAPI.getUserFromSession(request.cookies.SESSION)
+            .then(function(user){
+                // if we get back a user object, set it on the request. From now on, this request looks like it was made by this user as far as the rest of the code is concerned
+                if(user){
+                    request.loggedInUser = user;
+                }
+                
+                next();
+            });
+    }
+    else{
+        //if no SESSION cookie, move forward
+        next();
+    }
+}
+
+// Adding the middleware to our express stack. This should be AFTER the cookieParser middleware
+app.use(checkLoginToken);
+
 
 /*
 IMPORTANT!!!!!!!!!!!!!!!!!
@@ -68,8 +92,7 @@ app.get('/', function(req, res) {
             res.render('post-list', {
                 posts: bigPostsTable
             }); 
-            
-            //*********Need to improve on votes data. I'm getting vote numbers for posts that haven't been voted on.
+
         })
         .catch(function(error) {
             console.log("Error happened", error);
@@ -77,17 +100,105 @@ app.get('/', function(req, res) {
 
 });
 
-// //2) Login Page~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// app.get('/login', function(request, response) {
-//     // code to display login form
-// });
+//personalized homepage for user once they login
+app.get('/home/:username', function(req, res) {
 
-// app.post('/login', function(request, response) {
-//     // code to login a user
-//     // hint: you'll have to use response.cookie here
-// });
+    var user = req.params.username;
+    
+    req = redditAPI.getAllPosts({
+            numPerPage: 40,
+            page: 0
+        })
+        .then(function(bigPostsTable) {
+            //console.log(bigPostsTable);
+            res.render('personalized-homepage', {
+                posts: bigPostsTable, 
+                user: user
+            }); 
+
+        })
+        .catch(function(error) {
+            console.log("Error happened", error);
+        });
+
+});
+
+//2) Login Page~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+app.get('/login', function(req, res) {
+    // code to display login form
+    res.render('login');
+});
+
+app.post('/login', function(req, res) {
+    // code to login a user
+    // hint: you'll have to use response.cookie here
+    
+    //***QUESTION: Is there a way I can hide what user is typing in password box? Is there an npm?
+    redditAPI.checkLogin(req.body.username, req.body.password)
+        .then(function(user){ //user is an object if both user and password exists
+            return redditAPI.createSession(user.id); //creates token for that userId
+        })
+        .then(function(token){
+            res.cookie('SESSION', token); //assigns token from createSession, to 'SESSION' property inside cookie object
+            
+            var redirectURL = '/home/'+ req.body.username;
+            res.redirect(redirectURL); //trying to redirect user to their personalized homepage on 104
+        })
+        .catch(function(error){
+          console.log(error);
+          res.status(401).send(error.message);
+        });
+});
+
+//2.5) User Permissions Pages~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+app.get('/createPost', function(req, res) {
+   res.render('create-content');
+});
 
 
+app.post('/createPost', function(req, res){
+    if(!req.loggedInUser){
+        res.status(401).send('You must be logged in to create content!');
+    }
+    else{
+        
+        console.log("req.loggedInUser: ", req.loggedInUser, typeof req.loggedInUser);
+        
+        redditAPI.createPost({
+            title: req.body.title,
+            url: req.body.url,
+            userId: req.loggedInUser[0].id, //this is NULL
+            subredditId: 6
+        })
+        .then(function(post) {
+            console.log("post: ", post, typeof post);
+            
+            var redirectURL = '/posts/' + post.id;
+            res.redirect(redirectURL); 
+
+        })
+        .catch(function(error) {
+            console.log("Error happened", error);
+            res.status(500).send('500 Error');
+
+        });
+    }
+})
+
+
+//------Displaying pages----------------------------------------
+app.get('/posts/:ID', function(req, res) {
+    var postID = req.params.ID;
+    //console.log("req.params is...", postID, typeof postID);
+
+    redditAPI.getSinglePost(+postID)
+        .then(function(result) {
+            res.render('single-post', {post: result});
+        })
+        .catch(function(error) {
+            console.log("Error happened", error);
+        });
+}); 
 // //3) Signup Page~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // app.get('/signup', function(request, response) {
 //     // code to display signup form

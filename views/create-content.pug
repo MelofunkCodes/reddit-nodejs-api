@@ -1,6 +1,16 @@
-form(action="/createContent", method="POST")
-  div
-    input(type="text", name="url", placeholder="Enter a URL to content")
-  div
-    input(type="text", name="title", placeholder="Enter the title of your content")
-  button(type="submit") Create!
+extends layout.pug
+
+block title
+  title Welcome to Reddit Clone!!!
+
+block content
+  h1 Welcome to Reddit Clone!!!
+  h2 Create a Post:
+  form(action="/createPost", method="POST")
+    div
+      p Post URL: 
+      input(type="text", name="url", placeholder="Enter a URL to content")
+    div
+      p Post Title:
+      input(type="text", name="title", placeholder="Enter the title of your content")
+    button(type="submit") Create!
