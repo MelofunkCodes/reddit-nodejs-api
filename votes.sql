@@ -85,29 +85,29 @@ ORDER BY posts.id DESC
 
 --sort by NEW (DEFAULT)
 SELECT 
-  posts.id AS postId,
-  posts.title,
-  posts.url,
-  posts.userId,
-  posts.createdAt AS postCreatedAt,
-  posts.updatedAt AS postUpdatedAt,
-  users.id,
-  users.username,
-  users.createdAt,
-  users.updatedAt,
-  subreddits.id AS subredditId,
-  subreddits.name AS subredditName,
-  subreddits.description,
-  subreddits.createdAt AS subCreatedAt,
-  subreddits.updatedAt AS subUpdatedAt,
-  SUM(votes.vote) AS voteScore,
-  SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()) as hotnessScore,
-  SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
-  SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
+    posts.id AS postId,
+    posts.title,
+    posts.url,
+    posts.userId,
+    posts.createdAt AS postCreatedAt,
+    posts.updatedAt AS postUpdatedAt,
+    users.id,
+    users.username,
+    users.createdAt,
+    users.updatedAt,
+    subreddits.id AS subredditId,
+    subreddits.name AS subredditName,
+    subreddits.description,
+    subreddits.createdAt AS subCreatedAt,
+    subreddits.updatedAt AS subUpdatedAt,
+    COALESCE(SUM(votes.vote), 0) AS voteScore, --COALESCE takes as many params as you want, the first thing it finds with value it will output as such, if it doesn't, give it a 0 instead. (strategy is to do all the logic here vs in JS!!)
+    SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()) as hotnessScore,
+    SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
+    SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
 FROM subreddits
 LEFT JOIN posts ON subreddits.id = posts.subredditId
 LEFT JOIN users ON posts.userId = users.id
-LEFT JOIN votes ON users.id = votes.userId
+LEFT JOIN votes ON posts.id = votes.postId --had to change this because it was aggregating all the user votes to each postId, and making that look all the votes for that postId when it was actually the total votes of each user
 GROUP BY posts.id
 ORDER BY posts.createdAt DESC
 LIMIT 2 OFFSET 10\G
@@ -131,14 +131,14 @@ SELECT
   subreddits.description,
   subreddits.createdAt AS subCreatedAt,
   subreddits.updatedAt AS subUpdatedAt,
-  SUM(votes.vote) AS voteScore,
+  COALESCE(SUM(votes.vote), 0) AS voteScore,
   SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()) as hotnessScore,
   SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
   SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
 FROM subreddits
 LEFT JOIN posts ON subreddits.id = posts.subredditId
 LEFT JOIN users ON posts.userId = users.id
-LEFT JOIN votes ON users.id = votes.userId
+LEFT JOIN votes ON posts.id = votes.postId
 GROUP BY posts.id
 ORDER BY voteScore DESC\G
 
@@ -159,14 +159,14 @@ SELECT
   subreddits.description,
   subreddits.createdAt AS subCreatedAt,
   subreddits.updatedAt AS subUpdatedAt,
-  SUM(votes.vote) AS voteScore,
+  COALESCE(SUM(votes.vote), 0) AS voteScore,
   SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()) as hotnessScore,
   SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
   SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
 FROM subreddits
 LEFT JOIN posts ON subreddits.id = posts.subredditId
 LEFT JOIN users ON posts.userId = users.id
-LEFT JOIN votes ON users.id = votes.userId
+LEFT JOIN votes ON posts.id = votes.postId
 GROUP BY posts.id
 ORDER BY hotnessScore DESC\G
 

@@ -85,14 +85,14 @@ module.exports = function RedditAPI(conn) {
             subreddits.description,
             subreddits.createdAt AS subCreatedAt,
             subreddits.updatedAt AS subUpdatedAt,
-            SUM(votes.vote) AS voteScore,
+            COALESCE(SUM(votes.vote), 0) AS voteScore,
             SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()) as hotnessScore,
             SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
             SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
         FROM subreddits
         LEFT JOIN posts ON subreddits.id = posts.subredditId
         LEFT JOIN users ON posts.userId = users.id
-        LEFT JOIN votes ON users.id = votes.userId
+        LEFT JOIN votes ON posts.id = votes.postId
         GROUP BY posts.id
         ORDER BY posts.createdAt DESC
         LIMIT ? OFFSET ?`;
@@ -118,7 +118,7 @@ module.exports = function RedditAPI(conn) {
                 url: eachPost.url,
                 createdAt: eachPost.postCreatedAt,
                 updatedAt: eachPost.postUpdatedAt,
-                voteScore: eachPost.voteScore,
+                score: eachPost.voteScore,
                 upVotes: eachPost.upVotes,
                 downVotes: eachPost.downVotes,
                 userId: eachPost.userId,
