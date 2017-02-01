@@ -67,29 +67,37 @@ module.exports = function RedditAPI(conn) {
 
         //console.log("limit: ", limit);
         //console.log("offset: ", offset);
+        
+        var query = 
+        `SELECT 
+            posts.id AS postId,
+            posts.title,
+            posts.url,
+            posts.userId,
+            posts.createdAt AS postCreatedAt,
+            posts.updatedAt AS postUpdatedAt,
+            users.id,
+            users.username,
+            users.createdAt,
+            users.updatedAt,
+            subreddits.id AS subredditId,
+            subreddits.name AS subredditName,
+            subreddits.description,
+            subreddits.createdAt AS subCreatedAt,
+            subreddits.updatedAt AS subUpdatedAt,
+            SUM(votes.vote) AS voteScore,
+            SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()) as hotnessScore,
+            SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
+            SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
+        FROM subreddits
+        LEFT JOIN posts ON subreddits.id = posts.subredditId
+        LEFT JOIN users ON posts.userId = users.id
+        LEFT JOIN votes ON users.id = votes.userId
+        GROUP BY posts.id
+        ORDER BY posts.createdAt DESC
+        LIMIT ? OFFSET ?`;
 
-        return conn.query(`
-            SELECT 
-              posts.id AS postId,
-              posts.title,
-              posts.url,
-              posts.userId,
-              posts.createdAt AS postCreatedAt,
-              posts.updatedAt AS postUpdatedAt,
-              users.id,
-              users.username,
-              users.createdAt,
-              users.updatedAt,
-              subreddits.id AS subredditId,
-              subreddits.name AS subredditName,
-              subreddits.description,
-              subreddits.createdAt AS subCreatedAt,
-              subreddits.updatedAt AS subUpdatedAt
-            FROM users
-              JOIN posts ON users.id = posts.userId
-              JOIN subreddits ON posts.subredditId = subreddits.id
-              ORDER BY postCreatedAt DESC
-              LIMIT ? OFFSET ?`, [limit, offset])
+        return conn.query(query, [limit, offset])
           .then(function(bigPostsTable) {
             /*
             LOGIC
@@ -100,7 +108,7 @@ module.exports = function RedditAPI(conn) {
             5. may have to return JSON.stringify(posts, null ,4);
               
             */
-
+            //console.log(bigPostsTable);
             var posts = [];
 
             bigPostsTable.forEach(function(eachPost) {
@@ -110,6 +118,9 @@ module.exports = function RedditAPI(conn) {
                 url: eachPost.url,
                 createdAt: eachPost.postCreatedAt,
                 updatedAt: eachPost.postUpdatedAt,
+                voteScore: eachPost.voteScore,
+                upVotes: eachPost.upVotes,
+                downVotes: eachPost.downVotes,
                 userId: eachPost.userId,
                 user: {
                   id: eachPost.id,
@@ -275,8 +286,19 @@ module.exports = function RedditAPI(conn) {
             return conn.query('SELECT * FROM votes');
           })
           .then(function(result){
-            console.log("typeof createdAt: ", typeof result.createdAt);
-            return result;
+            var votes = [];
+            
+            result.forEach(function(eachVote){
+              eachVote = {
+                postId: eachVote.postId,
+                userId: eachVote.userId,
+                vote: eachVote.vote,
+                createdAt: eachVote.createdAt,
+                updatedAt: eachVote.updatedAt
+              }
+              votes.push(eachVote);
+            })
+            return votes;
           });
           
           

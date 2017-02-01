@@ -61,18 +61,21 @@ var redditAPI = reddit(connection);
 // });
 
 
-// //===FEATURE - Displaying all posts=======
-// redditAPI.getAllPosts()
-// .then(function(bigPostsTable){
-//   console.log(bigPostsTable);
-//   connection.end();
-// })
-// .catch(function(error){
-//     console.log("Error happened", error);
+//===FEATURE - Displaying all posts=======
+redditAPI.getAllPosts({
+  numPerPage: 2,
+  page: 0
+})
+.then(function(bigPostsTable){
+  console.log(bigPostsTable);
+  connection.end();
+})
+.catch(function(error){
+    console.log("Error happened", error);
   
-//   connection.end();
+  connection.end();
 
-// });
+});
 
 // //===FEATURE - getAllPostsForUser========================
 // redditAPI.getAllPostsForUser(2)
@@ -129,17 +132,17 @@ var redditAPI = reddit(connection);
 //   connection.end();
 // });
 
-//===FEATURE - createOrUpdateVote=========================
-redditAPI.createOrUpdateVote({
-  postId: 4,
-  userId: 3,
-  vote: 1
-})
-.then(function(result){
-  console.log(result);
-  connection.end();
-})
-.catch(function(error){
-  console.log("Error happened", error);
-  connection.end();
-});
+// //===FEATURE - createOrUpdateVote=========================
+// redditAPI.createOrUpdateVote({
+//   postId: 6,
+//   userId: 3,
+//   vote: -1
+// })
+// .then(function(result){
+//   console.log(result);
+//   connection.end();
+// })
+// .catch(function(error){
+//   console.log("Error happened", error);
+//   connection.end();
+// });
