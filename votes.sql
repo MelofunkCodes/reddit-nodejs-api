@@ -106,11 +106,12 @@ SELECT
   SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
 FROM subreddits
 LEFT JOIN posts ON subreddits.id = posts.subredditId
-LEFT JOIN votes ON posts.id = votes.postId
-LEFT JOIN users ON votes.userId = users.id
+LEFT JOIN users ON posts.userId = users.id
+LEFT JOIN votes ON users.id = votes.userId
 GROUP BY posts.id
-ORDER BY posts.createdAt DESC\G
-
+ORDER BY posts.createdAt DESC
+LIMIT 2 OFFSET 10\G
+--for some reason, for the posts that don't have votes, 
 
 --------------------------------------------
 --sort by TOP RANKING
@@ -136,8 +137,8 @@ SELECT
   SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
 FROM subreddits
 LEFT JOIN posts ON subreddits.id = posts.subredditId
-LEFT JOIN votes ON posts.id = votes.postId
-LEFT JOIN users ON votes.userId = users.id
+LEFT JOIN users ON posts.userId = users.id
+LEFT JOIN votes ON users.id = votes.userId
 GROUP BY posts.id
 ORDER BY voteScore DESC\G
 
@@ -164,8 +165,8 @@ SELECT
   SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
 FROM subreddits
 LEFT JOIN posts ON subreddits.id = posts.subredditId
-LEFT JOIN votes ON posts.id = votes.postId
-LEFT JOIN users ON votes.userId = users.id
+LEFT JOIN users ON posts.userId = users.id
+LEFT JOIN votes ON users.id = votes.userId
 GROUP BY posts.id
 ORDER BY hotnessScore DESC\G
 
