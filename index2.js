@@ -117,7 +117,7 @@ app.get('/', function(req, res) {
 app.post('/', function(req, res) {
 
     // //testing to see if the button user clicked is for the correct post, correct vote value, and correct user
-    console.log("req.body: ", req.body, typeof req.body); //everything in req.body is a STRING!!
+   // console.log("req.body: ", req.body, typeof req.body); //everything in req.body is a STRING!!
     // console.log("req.body.postId: ", req.body.postId, typeof req.body.postId); //string
     // console.log("req.loggedInUser[0].id: ", req.loggedInUser[0].id, typeof req.loggedInUser[0].id);//number
     // console.log("req.body.vote: ", req.body.vote, typeof req.body.vote);//string

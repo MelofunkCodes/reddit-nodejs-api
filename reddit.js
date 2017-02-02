@@ -119,7 +119,7 @@ module.exports = function RedditAPI(conn) {
             WHERE sessions.token = ? `, [cookie]);
       }, //closing bracket for getUserFromSession
 //=================DISPLAYING FEATURES========================
-      getAllPosts: function(options) {
+      getAllPosts: function(options, sortingMethod) {
 
         //console.log("options: ", options);
         if (!options) {
@@ -132,8 +132,10 @@ module.exports = function RedditAPI(conn) {
 
         //console.log("limit: ", limit);
         //console.log("offset: ", offset);
-
-        var query =
+        var query = "";
+        
+        if(sortingMethod === "new"){
+          query =
           `SELECT 
             posts.id AS postId,
             posts.title,
@@ -151,16 +153,142 @@ module.exports = function RedditAPI(conn) {
             subreddits.createdAt AS subCreatedAt,
             subreddits.updatedAt AS subUpdatedAt,
             COALESCE(SUM(votes.vote), 0) AS voteScore,
-            SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()) as hotnessScore,
+            ROUND( SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()), 2) as hotnessScore,
             SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
             SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
-        FROM subreddits
-        LEFT JOIN posts ON subreddits.id = posts.subredditId
-        LEFT JOIN users ON posts.userId = users.id
-        LEFT JOIN votes ON posts.id = votes.postId
-        GROUP BY posts.id
-        ORDER BY posts.createdAt DESC
-        LIMIT ? OFFSET ?`;
+          FROM subreddits
+          LEFT JOIN posts ON subreddits.id = posts.subredditId
+          LEFT JOIN users ON posts.userId = users.id
+          LEFT JOIN votes ON posts.id = votes.postId
+          GROUP BY posts.id
+          ORDER BY posts.createdAt DESC
+          LIMIT ? OFFSET ?`;
+        }
+        else if (sortingMethod === "top"){
+          query = 
+          `SELECT 
+            posts.id AS postId,
+            posts.title,
+            posts.url,
+            posts.userId,
+            posts.createdAt AS postCreatedAt,
+            posts.updatedAt AS postUpdatedAt,
+            users.id,
+            users.username,
+            users.createdAt,
+            users.updatedAt,
+            subreddits.id AS subredditId,
+            subreddits.name AS subredditName,
+            subreddits.description,
+            subreddits.createdAt AS subCreatedAt,
+            subreddits.updatedAt AS subUpdatedAt,
+            COALESCE(SUM(votes.vote), 0) AS voteScore,
+            ROUND( SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()), 2) as hotnessScore,
+            SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
+            SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
+          FROM subreddits
+          LEFT JOIN posts ON subreddits.id = posts.subredditId
+          LEFT JOIN users ON posts.userId = users.id
+          LEFT JOIN votes ON posts.id = votes.postId
+          GROUP BY posts.id
+          ORDER BY voteScore DESC
+          LIMIT ? OFFSET ?`;
+        }
+        else if(sortingMethod === "hot"){
+          query =
+          `SELECT 
+            posts.id AS postId,
+            posts.title,
+            posts.url,
+            posts.userId,
+            posts.createdAt AS postCreatedAt,
+            posts.updatedAt AS postUpdatedAt,
+            users.id,
+            users.username,
+            users.createdAt,
+            users.updatedAt,
+            subreddits.id AS subredditId,
+            subreddits.name AS subredditName,
+            subreddits.description,
+            subreddits.createdAt AS subCreatedAt,
+            subreddits.updatedAt AS subUpdatedAt,
+            COALESCE(SUM(votes.vote), 0) AS voteScore,
+            ROUND( SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()), 2) as hotnessScore,
+            SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
+            SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
+          FROM subreddits
+          LEFT JOIN posts ON subreddits.id = posts.subredditId
+          LEFT JOIN users ON posts.userId = users.id
+          LEFT JOIN votes ON posts.id = votes.postId
+          GROUP BY posts.id
+          ORDER BY hotnessScore DESC
+          LIMIT ? OFFSET ?`;
+        } 
+        else if(sortingMethod === "controversial"){
+          query = 
+          `SELECT
+            *,
+            ROUND( LEAST(upVotes, downVotes)/(upVotes - downVotes)^2, 2) AS controversialRating
+          FROM
+            (SELECT 
+              posts.id AS postId,
+              posts.title,
+              posts.url,
+              posts.userId,
+              posts.createdAt AS postCreatedAt,
+              posts.updatedAt AS postUpdatedAt,
+              users.id,
+              users.username,
+              users.createdAt,
+              users.updatedAt,
+              subreddits.id AS subredditId,
+              subreddits.name AS subredditName,
+              subreddits.description,
+              subreddits.createdAt AS subCreatedAt,
+              subreddits.updatedAt AS subUpdatedAt,
+              COALESCE(SUM(votes.vote), 0) AS voteScore,
+              ROUND( SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()) , 2) as hotnessScore,
+              SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
+              SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
+            FROM subreddits
+            LEFT JOIN posts ON subreddits.id = posts.subredditId
+            LEFT JOIN users ON posts.userId = users.id
+            LEFT JOIN votes ON posts.id = votes.postId
+            GROUP BY posts.id)tbl
+          ORDER BY controversialRating DESC
+          LIMIT ? OFFSET ?`;
+        }
+        else { //default will be NEW
+          query =
+          `SELECT 
+            posts.id AS postId,
+            posts.title,
+            posts.url,
+            posts.userId,
+            posts.createdAt AS postCreatedAt,
+            posts.updatedAt AS postUpdatedAt,
+            users.id,
+            users.username,
+            users.createdAt,
+            users.updatedAt,
+            subreddits.id AS subredditId,
+            subreddits.name AS subredditName,
+            subreddits.description,
+            subreddits.createdAt AS subCreatedAt,
+            subreddits.updatedAt AS subUpdatedAt,
+            COALESCE(SUM(votes.vote), 0) AS voteScore,
+            ROUND( SUM(votes.vote)/timestampdiff(DAY, posts.createdAt, now()), 2) as hotnessScore,
+            SUM( if(votes.vote = 1, 1, 0)) AS upVotes,
+            SUM( if(votes.vote = -1, 1, 0) ) AS downVotes
+          FROM subreddits
+          LEFT JOIN posts ON subreddits.id = posts.subredditId
+          LEFT JOIN users ON posts.userId = users.id
+          LEFT JOIN votes ON posts.id = votes.postId
+          GROUP BY posts.id
+          ORDER BY posts.createdAt DESC
+          LIMIT ? OFFSET ?`;
+        }
+       
 
         return conn.query(query, [limit, offset])
           .then(function(bigPostsTable) {

@@ -64,15 +64,15 @@ var redditAPI = reddit(connection);
 //   connection.end();
 // });
 
-redditAPI.getUserFromSession("3d4vc3h3c4u3j2u3j522c5v6k2h3f5d3b2g5fv332o6w55565h6j6d5fe4z1r5l2z101v5k59546r5a2lz6b0534f4q19645a5e2da3v1v551e46q1t701b6bz3v652482m1e3q5k4v76l4u5z3x38636f4i3h49j23686d404w63441x3z1q5q3y5wx")
-.then(function(result){
-  console.log(result);
-  connection.end();
-})
-.catch(function(error){
-  console.log(error);
-  connection.end();
-});
+// redditAPI.getUserFromSession("3d4vc3h3c4u3j2u3j522c5v6k2h3f5d3b2g5fv332o6w55565h6j6d5fe4z1r5l2z101v5k59546r5a2lz6b0534f4q19645a5e2da3v1v551e46q1t701b6bz3v652482m1e3q5k4v76l4u5z3x38636f4i3h49j23686d404w63441x3z1q5q3y5wx")
+// .then(function(result){
+//   console.log(result);
+//   connection.end();
+// })
+// .catch(function(error){
+//   console.log(error);
+//   connection.end();
+// });
 // //===creating posts with existing users===
 // redditAPI.createPost({
 //   title: 'Saturday sale downtown MTL',
@@ -92,21 +92,21 @@ redditAPI.getUserFromSession("3d4vc3h3c4u3j2u3j522c5v6k2h3f5d3b2g5fv332o6w55565h
 // });
 
 
-// //===FEATURE - Displaying all posts=======
-// redditAPI.getAllPosts({
-//   numPerPage: 2,
-//   page: 0
-// })
-// .then(function(bigPostsTable){
-//   console.log(bigPostsTable);
-//   connection.end();
-// })
-// .catch(function(error){
-//     console.log("Error happened", error);
+//===FEATURE - Displaying all posts=======
+redditAPI.getAllPosts({
+  numPerPage: 2,
+  page: 0
+}, "new")
+.then(function(bigPostsTable){
+  console.log(bigPostsTable);
+  connection.end();
+})
+.catch(function(error){
+    console.log("Error happened", error);
   
-//   connection.end();
+  connection.end();
 
-// });
+});
 
 // //===FEATURE - getAllPostsForUser========================
 // redditAPI.getAllPostsForUser(2)
