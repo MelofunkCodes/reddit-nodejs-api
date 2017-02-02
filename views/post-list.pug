@@ -8,6 +8,9 @@ block content
   #user
     if user
       p Welcome back, #{user.username}!
+      form(action= "/", method="POST")
+        input(type="hidden", name="logout", value="1")
+        button(type="submit") logout      
       ul.post-list
         each post in posts
           li.post
@@ -24,6 +27,12 @@ block content
               input(type="hidden", name="postId", value=post.id)
               button(type="submit") downvote this
     else
+      form(action= "/", method="POST")
+        input(type="hidden", name="signup", value="1")
+        button(type="submit") Sign Up
+      form(action= "/", method="POST")
+        input(type="hidden", name="login", value="1")
+        button(type="submit") Login 
       ul.post-list
         each post in posts
           li.post

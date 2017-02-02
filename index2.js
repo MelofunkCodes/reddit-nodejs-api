@@ -94,14 +94,14 @@ app.get('/', function(req, res) {
     }
 
     //console.log("user: ", user);//check if user logged in
-    
+
     redditAPI.getAllPosts({
             numPerPage: 40,
             page: 0
         })
         .then(function(bigPostsTable) {
             //console.log(bigPostsTable);
-            console.log("first post: ", bigPostsTable[0]);
+            //console.log("first post: ", bigPostsTable[0]);
             res.render('post-list', {
                 posts: bigPostsTable,
                 user: user
@@ -114,27 +114,42 @@ app.get('/', function(req, res) {
 
 });
 
-app.post('/', function(req, res){
-    
+app.post('/', function(req, res) {
+
     // //testing to see if the button user clicked is for the correct post, correct vote value, and correct user
-    // console.log("req.body: ", req.body, typeof req.body);
+    console.log("req.body: ", req.body, typeof req.body); //everything in req.body is a STRING!!
     // console.log("req.body.postId: ", req.body.postId, typeof req.body.postId); //string
     // console.log("req.loggedInUser[0].id: ", req.loggedInUser[0].id, typeof req.loggedInUser[0].id);//number
     // console.log("req.body.vote: ", req.body.vote, typeof req.body.vote);//string
-    
-    redditAPI.createOrUpdateVote({
-      postId: +req.body.postId, //how to know which button user clicks AND for which post?
-      userId: req.loggedInUser[0].id,
-      vote: +req.body.vote //how to know which button user clicks?
-    })
-    .then(function(result){
+    if (req.body.vote && req.body.postId) {
+        redditAPI.createOrUpdateVote({
+                postId: +req.body.postId, //how to know which button user clicks AND for which post?
+                userId: req.loggedInUser[0].id,
+                vote: +req.body.vote //how to know which button user clicks?
+            })
+            .then(function(result) {
+                res.redirect('/');
+            })
+            .catch(function(error) {
+                console.log("Error happened", error);
+            });
+    }
+
+    //adding buttons for signup, login, and logout
+    // console.log("req.body.signup: ", typeof req.body.signup); //string
+    // console.log("req.body.login: ", typeof req.body.login); //string
+
+    if (req.body.signup) {
+        res.redirect('/signup');
+    }
+    if (req.body.login) {
+        res.redirect('/login');
+    }
+    if (req.body.logout){
+        res.clearCookie('SESSION');
         res.redirect('/');
-    })
-    .catch(function(error) {
-    console.log("Error happened", error);
-    });
-    
-    
+    }
+
 });
 
 
@@ -159,7 +174,7 @@ app.post('/login', function(req, res) {
                 maxAge: 300000
             }); //assigns token from createSession, to 'SESSION' property inside cookie object
             //put maxAge just for testing. Will automatically log out user after 5 minutes
-            
+
             //console.log("req.body.postId: ", req.body.postId);
             console.log("req.loggedInUser: ", req.loggedInUser);
 
