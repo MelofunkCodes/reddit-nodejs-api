@@ -37,20 +37,20 @@ app.use(morgan('dev'));
 //REFERENCE: https://github.com/expressjs/cookie-parser
 app.use(cookieParser());
 
-function checkLoginToken(request, response, next){
+function checkLoginToken(request, response, next) {
     //checks if there is a SESSION cookie...
-    if(request.cookies.SESSION){
+    if (request.cookies.SESSION) {
         return redditAPI.getUserFromSession(request.cookies.SESSION)
-            .then(function(user){
+            .then(function(user) {
                 // if we get back a user object, set it on the request. From now on, this request looks like it was made by this user as far as the rest of the code is concerned
-                if(user){
+                if (user) {
                     request.loggedInUser = user;
                 }
-                
+
                 next();
             });
     }
-    else{
+    else {
         //if no SESSION cookie, move forward
         next();
     }
@@ -88,15 +88,24 @@ var redditAPI = reddit(connection);
 */
 app.get('/', function(req, res) {
 
-    req = redditAPI.getAllPosts({
+
+    if (req.loggedInUser) {
+        var user = req.loggedInUser[0];
+    }
+
+    //console.log("user: ", user);//check if user logged in
+    
+    redditAPI.getAllPosts({
             numPerPage: 40,
             page: 0
         })
         .then(function(bigPostsTable) {
             //console.log(bigPostsTable);
+            console.log("first post: ", bigPostsTable[0]);
             res.render('post-list', {
-                posts: bigPostsTable
-            }); 
+                posts: bigPostsTable,
+                user: user
+            });
 
         })
         .catch(function(error) {
@@ -105,34 +114,30 @@ app.get('/', function(req, res) {
 
 });
 
-//personalized homepage for user once they login
-app.get('/home/:username', function(req, res) {
-
-    if(!req.loggedInUser || req.loggedInUser[0].username !== req.params.username){ //checks if user is logged in AND also prevents logged in user from accessing OTHER users homepage
-        res.status(401).send('You must be logged in AND the correct user to view this page!');
-    }
-    else{
-        
-        var user = req.params.username;
+app.post('/', function(req, res){
     
-        req = redditAPI.getAllPosts({
-                numPerPage: 40,
-                page: 0
-            })
-            .then(function(bigPostsTable) {
-                //console.log(bigPostsTable);
-                res.render('personalized-homepage', {
-                    posts: bigPostsTable, 
-                    user: user
-                }); 
+    // //testing to see if the button user clicked is for the correct post, correct vote value, and correct user
+    // console.log("req.body: ", req.body, typeof req.body);
+    // console.log("req.body.postId: ", req.body.postId, typeof req.body.postId); //string
+    // console.log("req.loggedInUser[0].id: ", req.loggedInUser[0].id, typeof req.loggedInUser[0].id);//number
+    // console.log("req.body.vote: ", req.body.vote, typeof req.body.vote);//string
     
-            })
-            .catch(function(error) {
-                console.log("Error happened", error);
-            });
-        };
-
+    redditAPI.createOrUpdateVote({
+      postId: +req.body.postId, //how to know which button user clicks AND for which post?
+      userId: req.loggedInUser[0].id,
+      vote: +req.body.vote //how to know which button user clicks?
+    })
+    .then(function(result){
+        res.redirect('/');
+    })
+    .catch(function(error) {
+    console.log("Error happened", error);
+    });
+    
+    
 });
+
+
 
 //2) Login Page~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 app.get('/login', function(req, res) {
@@ -143,64 +148,68 @@ app.get('/login', function(req, res) {
 app.post('/login', function(req, res) {
     // code to login a user
     // hint: you'll have to use response.cookie here
-    
+
     //***QUESTION: Is there a way I can hide what user is typing in password box? Is there an npm?
     redditAPI.checkLogin(req.body.username, req.body.password)
-        .then(function(user){ //user is an object if both user and password exists
+        .then(function(user) { //user is an object if both user and password exists
             return redditAPI.createSession(user.id); //creates token for that userId
         })
-        .then(function(token){
-            res.cookie('SESSION', token, {maxAge: 300000}); //assigns token from createSession, to 'SESSION' property inside cookie object
-                //put maxAge just for testing. Will automatically log out user after 5 minutes
+        .then(function(token) {
+            res.cookie('SESSION', token, {
+                maxAge: 300000
+            }); //assigns token from createSession, to 'SESSION' property inside cookie object
+            //put maxAge just for testing. Will automatically log out user after 5 minutes
             
-            var redirectURL = '/home/'+ req.body.username;
-            res.redirect(redirectURL); //trying to redirect user to their personalized homepage on 104
-            
+            //console.log("req.body.postId: ", req.body.postId);
+            console.log("req.loggedInUser: ", req.loggedInUser);
+
+            res.redirect('/'); //trying to redirect user to homepage but it will be personalized for them and allow them to vote
+
             //res.clearCookie('SESSION'); //testing -- does not work here because I'm redirecting the response before clearing the cookie. 
         })
-        .catch(function(error){
-          console.log(error);
-          res.status(401).send(error.message);
+        .catch(function(error) {
+            console.log(error);
+            res.status(401).send(error.message);
         });
 });
 
 //2.5) User Permissions Pages~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 app.get('/createPost', function(req, res) {
-    if(!req.loggedInUser){
+    if (!req.loggedInUser) {
         res.status(401).send('You must be logged in to create content!');
     }
-    else{
+    else {
         res.render('create-content');
     }
 });
 
 
-app.post('/createPost', function(req, res){
-    if(!req.loggedInUser){
+app.post('/createPost', function(req, res) {
+    if (!req.loggedInUser) {
         res.status(401).send('You must be logged in to create content!');
     }
-    else{
-        
+    else {
+
         console.log("req.loggedInUser: ", req.loggedInUser, typeof req.loggedInUser);
-        
+
         redditAPI.createPost({
-            title: req.body.title,
-            url: req.body.url,
-            userId: req.loggedInUser[0].id, //this is NULL
-            subredditId: 1
-        })
-        .then(function(post) {
-            console.log("post: ", post, typeof post);
-            
-            var redirectURL = '/posts/' + post.id;
-            res.redirect(redirectURL); 
+                title: req.body.title,
+                url: req.body.url,
+                userId: req.loggedInUser[0].id, //this is NULL
+                subredditId: 1
+            })
+            .then(function(post) {
+                console.log("post: ", post, typeof post);
 
-        })
-        .catch(function(error) {
-            console.log("Error happened", error);
-            res.status(500).send('500 Error');
+                var redirectURL = '/posts/' + post.id;
+                res.redirect(redirectURL);
 
-        });
+            })
+            .catch(function(error) {
+                console.log("Error happened", error);
+                res.status(500).send('500 Error');
+
+            });
     }
 })
 
@@ -212,12 +221,14 @@ app.get('/posts/:ID', function(req, res) {
 
     redditAPI.getSinglePost(+postID)
         .then(function(result) {
-            res.render('single-post', {post: result});
+            res.render('single-post', {
+                post: result
+            });
         })
         .catch(function(error) {
             console.log("Error happened", error);
         });
-}); 
+});
 
 //3) Signup Page~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 app.get('/signup', function(req, res) {
@@ -229,24 +240,26 @@ app.post('/signup', function(req, res) {
     // code to signup a user
     // hint: you'll have to use bcrypt to hash the user's password
     redditAPI.createUser({
-        username: req.body.username,
-        password: req.body.password
-    })
-    .then(function(newUser) {
-        res.redirect('/login'); 
-    })
-    .catch(function(error) {
-        //console.log("Error happened", error);
-        res.status(422).send('Username already exists');
-        //used HTTP status code based on this: http://stackoverflow.com/questions/3825990/http-response-code-for-post-when-resource-already-exists
+            username: req.body.username,
+            password: req.body.password
+        })
+        .then(function(newUser) {
+            res.redirect('/login');
+        })
+        .catch(function(error) {
+            //console.log("Error happened", error);
+            res.status(422).send('Username already exists');
+            //used HTTP status code based on this: http://stackoverflow.com/questions/3825990/http-response-code-for-post-when-resource-already-exists
 
-    });
+        });
 });
 
 // //4) Votes functionality~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // app.post('/vote', function(request, response) {
 //     // code to add an up or down vote for a content+user combination
 // });
+
+
 
 
 //====Listen====================================================================
