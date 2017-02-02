@@ -1,0 +1,16 @@
+extends layout.pug
+
+block title
+  title Welcome to Reddit Clone!!!
+
+block content
+  h1 Welcome to Reddit Clone!!!
+  h2 Signup:
+  form(action="/signup", method="POST")
+    div
+      p username: 
+      input(type="text", name="username", placeholder="username")
+    div
+      p password:
+      input(type="password", name="password", placeholder="password")
+    button(type="submit") Create!
