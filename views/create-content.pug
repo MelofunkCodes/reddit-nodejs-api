@@ -3,8 +3,13 @@ extends layout.pug
 block title
   title Welcome to Reddit Clone!!!
 
-block content
+block header
   h1 Welcome to Reddit Clone!!!
+  form(action= redditposturl, method="POST")
+    input(type="hidden", name="home", value="1")
+    button(type="submit") Home
+  
+block content
   h2 Create a Post:
   form(action="/createPost", method="POST")
     div

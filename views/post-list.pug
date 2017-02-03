@@ -5,17 +5,25 @@ block title
   
 block header
   h1 Welcome to Reddit Clone!!!
+  div(id="sort")
+    each sort in sorts
+      li.sort
+        h5
+          a(href=sort.url)= sort.title
   #user
     if user
       p Welcome back, #{user.username}!
-      form(action= "/", method="POST")
+      form(action= sortingMethod.url, method="POST")
+        input(type="hidden", name="createPost", value="1")
+        button(type="submit") Create Post
+      form(action= sortingMethod.url, method="POST")
         input(type="hidden", name="logout", value="1")
         button(type="submit") logout
     else
-      form(action= "/", method="POST")
+      form(action= sortingMethod.url, method="POST")
         input(type="hidden", name="signup", value="1")
         button(type="submit") Sign Up
-      form(action= "/", method="POST")
+      form(action= sortingMethod.url, method="POST")
         input(type="hidden", name="login", value="1")
         button(type="submit") Login 
 
@@ -29,11 +37,11 @@ block content
               a(href=post.url)= post.title
             p Submitted by #{post.user.username}
             p Score: #{post.score} Upvotes: #{post.upVotes} Downvotes: #{post.downVotes}
-            form(action= "/", method="POST")
+            form(action= sortingMethod.url, method="POST")
               input(type="hidden", name="vote", value="1")
               input(type="hidden", name="postId", value=post.id)
               button(type="submit") upvote this
-            form(action= "/", method="POST")
+            form(action= sortingMethod.url, method="POST")
               input(type="hidden", name="vote", value="-1")
               input(type="hidden", name="postId", value=post.id)
               button(type="submit") downvote this

@@ -86,49 +86,79 @@ var redditAPI = reddit(connection);
     v1 - Display homepage with posts ordered by NEW
     v2 - update reddit.js for getAllPosts to take in 2nd param "sortMethod"
 */
-app.get('/', function(req, res) {
-
+function displayHomepage(req, res, sortingMethod) {
+    //console.log("sortingMethod of displayHomepage: ", sortingMethod);
 
     if (req.loggedInUser) {
         var user = req.loggedInUser[0];
     }
 
-    //console.log("user: ", user);//check if user logged in
+    var sorts = [{
+        title: "new",
+        url: "/new"
+    }, {
+        title: "top",
+        url: "/top"
+    }, {
+        title: "hot",
+        url: "/hot"
+    }, {
+        title: "controversial",
+        url: "/controversial"
+    }];
+
+    var method = {
+        name: sortingMethod,
+        url: "/" + sortingMethod
+    }
+
+    if (!sortingMethod) {
+        method.url = "/";
+    }
 
     redditAPI.getAllPosts({
             numPerPage: 40,
             page: 0
-        })
+        }, sortingMethod)
         .then(function(bigPostsTable) {
-            //console.log(bigPostsTable);
-            //console.log("first post: ", bigPostsTable[0]);
             res.render('post-list', {
                 posts: bigPostsTable,
-                user: user
+                user: user,
+                sorts: sorts,
+                sortingMethod: method
             });
-
         })
         .catch(function(error) {
             console.log("Error happened", error);
         });
 
-});
+}
 
-app.post('/', function(req, res) {
-
+function postHomepage(req, res, sortingMethod) {
+    //console.log("I'm here " + sortingMethod);
     // //testing to see if the button user clicked is for the correct post, correct vote value, and correct user
-   // console.log("req.body: ", req.body, typeof req.body); //everything in req.body is a STRING!!
+    //console.log("req.body: ", req.body, typeof req.body); //everything in req.body is a STRING!!
     // console.log("req.body.postId: ", req.body.postId, typeof req.body.postId); //string
     // console.log("req.loggedInUser[0].id: ", req.loggedInUser[0].id, typeof req.loggedInUser[0].id);//number
     // console.log("req.body.vote: ", req.body.vote, typeof req.body.vote);//string
+
+    //console.log("sortingMethod of postHomepage: ", sortingMethod); //printing out undefined
+
     if (req.body.vote && req.body.postId) {
         redditAPI.createOrUpdateVote({
-                postId: +req.body.postId, //how to know which button user clicks AND for which post?
+                postId: +req.body.postId,
                 userId: req.loggedInUser[0].id,
-                vote: +req.body.vote //how to know which button user clicks?
+                vote: +req.body.vote
             })
             .then(function(result) {
-                res.redirect('/');
+                var redirectURL = '/' + sortingMethod;
+
+                if (!sortingMethod) {
+                    redirectURL = '/';
+                }
+
+                console.log("redirectURL: ", redirectURL);
+                res.redirect(redirectURL);
             })
             .catch(function(error) {
                 console.log("Error happened", error);
@@ -138,21 +168,65 @@ app.post('/', function(req, res) {
     //adding buttons for signup, login, and logout
     // console.log("req.body.signup: ", typeof req.body.signup); //string
     // console.log("req.body.login: ", typeof req.body.login); //string
-
     if (req.body.signup) {
         res.redirect('/signup');
     }
     if (req.body.login) {
         res.redirect('/login');
     }
-    if (req.body.logout){
+    if (req.body.logout) {
         res.clearCookie('SESSION');
         res.redirect('/');
     }
+    if (req.body.createPost) {
+        res.redirect('createPost');
+    }
+}
 
+//DEFAULT HOMEPAGE
+app.get('/', function(req, res) {
+    displayHomepage(req, res);
 });
 
+app.post('/', function(req, res) {
+    postHomepage(req, res);
+});
 
+//homepage for "NEW"
+app.get('/new', function(req, res) {
+    displayHomepage(req, res, "new");
+});
+
+app.post('/new', function(req, res) {
+    postHomepage(req, res, "new");
+});
+
+//homepage for "TOP"
+app.get('/top', function(req, res) {
+    displayHomepage(req, res, "top");
+});
+
+app.post('/top', function(req, res) {
+    postHomepage(req, res, "top");
+});
+
+//homepage for "HOT"
+app.get('/hot', function(req, res) {
+    displayHomepage(req, res, "hot");
+});
+
+app.post('/hot', function(req, res) {
+    postHomepage(req, res, "hot");
+});
+
+//homepage for "CONTROVERSIAL"
+app.get('/controversial', function(req, res) {
+    displayHomepage(req, res, "controversial");
+});
+
+app.post('/controversial', function(req, res) {
+    postHomepage(req, res, "controversial");
+});
 
 //2) Login Page~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 app.get('/login', function(req, res) {
@@ -205,26 +279,33 @@ app.post('/createPost', function(req, res) {
     }
     else {
 
-        console.log("req.loggedInUser: ", req.loggedInUser, typeof req.loggedInUser);
+        if (req.body.url && req.body.title) {
+            //console.log("req.loggedInUser: ", req.loggedInUser, typeof req.loggedInUser);
 
-        redditAPI.createPost({
-                title: req.body.title,
-                url: req.body.url,
-                userId: req.loggedInUser[0].id, //this is NULL
-                subredditId: 1
-            })
-            .then(function(post) {
-                console.log("post: ", post, typeof post);
+            redditAPI.createPost({
+                    title: req.body.title,
+                    url: req.body.url,
+                    userId: req.loggedInUser[0].id, //this is NULL
+                    subredditId: 1
+                })
+                .then(function(post) {
+                    console.log("post: ", post, typeof post);
 
-                var redirectURL = '/posts/' + post.id;
-                res.redirect(redirectURL);
+                    var redirectURL = '/posts/' + post.id;
+                    res.redirect(redirectURL);
 
-            })
-            .catch(function(error) {
-                console.log("Error happened", error);
-                res.status(500).send('500 Error');
+                })
+                .catch(function(error) {
+                    console.log("Error happened", error);
+                    res.status(500).send('500 Error');
 
-            });
+                });
+        }
+
+        //if home button clicked
+        if (req.body.home) {
+            res.redirect('/');
+        }
     }
 })
 
@@ -234,15 +315,24 @@ app.get('/posts/:ID', function(req, res) {
     var postID = req.params.ID;
     //console.log("req.params is...", postID, typeof postID);
 
+    var url = "/posts/" + req.params.ID;
+    console.log("url to single-post.pug: ", url);
+
     redditAPI.getSinglePost(+postID)
         .then(function(result) {
             res.render('single-post', {
-                post: result
+                post: result,
+                redditposturl: url
             });
         })
         .catch(function(error) {
             console.log("Error happened", error);
         });
+});
+app.post('/posts/:ID', function(req, res) {
+    if (req.body.home) {
+        res.redirect('/');
+    }
 });
 
 //3) Signup Page~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
