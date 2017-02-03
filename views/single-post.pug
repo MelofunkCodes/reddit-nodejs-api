@@ -3,11 +3,11 @@ extends layout.pug
 block content
   div(id="posts")
     h1 Post #{post.id}
-        ul(class="posts-list")
-                li(class = "post-item")
-                    h2(class= "content-item__title")
-                        a(href=post.url) #{post.title}
-                p Created by: #{post.username}
+    ul(class="posts-list")
+            li(class = "post-item")
+                h2(class= "content-item__title")
+                    a(href=post.url) #{post.title}
+            p Created by: #{post.username}
   form(action= redditposturl, method="POST")
     input(type="hidden", name="home", value="1")
     button(type="submit") Home

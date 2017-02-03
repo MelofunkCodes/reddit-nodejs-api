@@ -41,14 +41,15 @@ block content
               a(href=post.url)= post.title
             p Submitted by #{post.user.username}
             p Score: #{post.score} Upvotes: #{post.upVotes} Downvotes: #{post.downVotes}
-            form(action= sortingMethod.url, method="POST")
-              input(type="hidden", name="vote", value="1")
-              input(type="hidden", name="postId", value=post.id)
-              button(type="submit") upvote this
-            form(action= sortingMethod.url, method="POST")
-              input(type="hidden", name="vote", value="-1")
-              input(type="hidden", name="postId", value=post.id)
-              button(type="submit") downvote this
+            .vote
+              form(action= sortingMethod.url, method="POST")
+                input(type="hidden", name="vote", value="1")
+                input(type="hidden", name="postId", value=post.id)
+                button(type="submit") upvote this
+              form(action= sortingMethod.url, method="POST")
+                input(type="hidden", name="vote", value="-1")
+                input(type="hidden", name="postId", value=post.id)
+                button(type="submit") downvote this
     else
       ul
         each post in posts

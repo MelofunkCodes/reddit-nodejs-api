@@ -1,7 +1,3 @@
-* {
-  border: 1px solid rgba(0,0,0,0.3);
-}
-
 html, body {
   margin: 0;
 }
@@ -19,6 +15,8 @@ h5 {
 p {
   font-family: Helvetica, Arial, sans-serif;
 }
+
+
 /*Header*/
 .header {
   background-color: #ffa800;
@@ -26,10 +24,11 @@ p {
 
 
 /* Navigation */
+/*clearfix allows you to see the black box */
 .clearfix {
   clear: both;
-  
 }
+
 .navigation {
     text-align: center;
     background-color: Black;
@@ -42,24 +41,39 @@ p {
 }
 
 .navigation li {
-
+    padding-left: 10px;
     float: left;
     text-transform: uppercase;
-    background-color: pink;
 }
 
 .navigation a {
   text-decoration: none;
-  color: white; /* #13241C*/
+  color: white; 
   font-weight: 100;
   padding: 5px;
-  margin-right: 10px;
+  margin-right: 50px;
   display: inline-block;
 }
 
 .navigation a:hover {
   background:#FF2A23;
   color:#000;
+}
+
+#user {
+  float: right;
+  padding-right: 10px;
+}
+
+#user form {
+  display: inline-block;
+  padding-left: 10px;
+  padding-top: 5px;
+}
+
+#user p {
+  color: white;
+  display: inline-block;
 }
 
 /* Post */
@@ -72,16 +86,15 @@ p {
   padding: 0;
 }
 
+.post li {
+  padding: 0px 0px 5px 10px;  
+}
+
 .post li:hover {
   background: LightGrey;
+  padding: 0px 0px 5px 10px;
 }
 
-#user {
-  float: right;
-  background-color: blue;
-}
-
-#user form {
+.vote form {
   display: inline-block;
-  background-color: red;
 }
