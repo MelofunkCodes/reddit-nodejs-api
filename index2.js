@@ -32,6 +32,9 @@ app.use(bodyParser.urlencoded({
 //REFERENCE: https://www.npmjs.com/package/morgan
 app.use(morgan('dev'));
 
+//static middleware that allows me to point to any directory (i.e. "static_files"), and it will automatically res.send any file requested from this directory
+app.use(express.static('static_files'));
+
 // This middleware will parse the Cookie header from all requests, and put the result in req.cookies.  Read the docs for more info!
 //this adds a 'cookies' property to the request, an object of key:value pairs for all the cookies we set
 //REFERENCE: https://github.com/expressjs/cookie-parser

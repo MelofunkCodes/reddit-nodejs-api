@@ -1,0 +1,87 @@
+* {
+  border: 1px solid rgba(0,0,0,0.3);
+}
+
+html, body {
+  margin: 0;
+}
+
+h1, h2, h3, a {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+}
+
+h5 {
+ font-family: Raleway, sans-serif;
+ font-weight: 100;
+}
+
+p {
+  font-family: Helvetica, Arial, sans-serif;
+}
+/*Header*/
+.header {
+  background-color: #ffa800;
+}
+
+
+/* Navigation */
+.clearfix {
+  clear: both;
+  
+}
+.navigation {
+    text-align: center;
+    background-color: Black;
+}
+
+.navigation ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navigation li {
+
+    float: left;
+    text-transform: uppercase;
+    background-color: pink;
+}
+
+.navigation a {
+  text-decoration: none;
+  color: white; /* #13241C*/
+  font-weight: 100;
+  padding: 5px;
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.navigation a:hover {
+  background:#FF2A23;
+  color:#000;
+}
+
+/* Post */
+.post{
+  clear: both;
+}
+.post ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.post li:hover {
+  background: LightGrey;
+}
+
+#user {
+  float: right;
+  background-color: blue;
+}
+
+#user form {
+  display: inline-block;
+  background-color: red;
+}

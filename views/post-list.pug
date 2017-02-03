@@ -4,35 +4,39 @@ block title
   title Welcome to Reddit Clone!!!
   
 block header
-  h1 Welcome to Reddit Clone!!!
-  div(id="sort")
-    each sort in sorts
-      li.sort
-        h5
-          a(href=sort.url)= sort.title
-  #user
-    if user
-      p Welcome back, #{user.username}!
-      form(action= sortingMethod.url, method="POST")
-        input(type="hidden", name="createPost", value="1")
-        button(type="submit") Create Post
-      form(action= sortingMethod.url, method="POST")
-        input(type="hidden", name="logout", value="1")
-        button(type="submit") logout
-    else
-      form(action= sortingMethod.url, method="POST")
-        input(type="hidden", name="signup", value="1")
-        button(type="submit") Sign Up
-      form(action= sortingMethod.url, method="POST")
-        input(type="hidden", name="login", value="1")
-        button(type="submit") Login 
+  .header
+    h1 Welcome to Reddit Clone!!!
+    .navigation
+      ul
+        each sort in sorts
+          li
+            a(href=sort.url)= sort.title
+              
+      #user
+        if user
+          p Welcome back, #{user.username}!
+          form(action= sortingMethod.url, method="POST")
+            input(type="hidden", name="createPost", value="1")
+            button(type="submit") Create Post
+          form(action= sortingMethod.url, method="POST")
+            input(type="hidden", name="logout", value="1")
+            button(type="submit") logout
+        else
+          form(action= sortingMethod.url, method="POST")
+            input(type="hidden", name="signup", value="1")
+            button(type="submit") Sign Up
+          form(action= sortingMethod.url, method="POST")
+            input(type="hidden", name="login", value="1")
+            button(type="submit") Login 
+      .clearfix
+        ='\n'
 
 block content
-  #user
+  .post
     if user
-      ul.post-list
+      ul
         each post in posts
-          li.post
+          li
             h2
               a(href=post.url)= post.title
             p Submitted by #{post.user.username}
@@ -46,9 +50,9 @@ block content
               input(type="hidden", name="postId", value=post.id)
               button(type="submit") downvote this
     else
-      ul.post-list
+      ul
         each post in posts
-          li.post
+          li
             h2
               a(href=post.url)= post.title
             p Submitted by #{post.user.username}
